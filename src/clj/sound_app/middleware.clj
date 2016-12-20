@@ -7,7 +7,6 @@
             [ring.middleware.format :refer [wrap-restful-format]]
             [sound-app.config :refer [env]]
             [ring.middleware.flash :refer [wrap-flash]]
-            [immutant.web.middleware :refer [wrap-session]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]])
   (:import [javax.servlet ServletContext]))
 
@@ -57,10 +56,8 @@
   (-> ((:middleware defaults) handler)
       wrap-webjars
       wrap-flash
-      (wrap-session {:cookie-attrs {:http-only true}})
       (wrap-defaults
         (-> site-defaults
-            (assoc-in [:security :anti-forgery] false)
-            (dissoc :session)))
+            (assoc-in [:security :anti-forgery] false)))
       wrap-context
       wrap-internal-error))
