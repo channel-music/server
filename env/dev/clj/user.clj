@@ -4,11 +4,11 @@
             sound-app.core))
 
 (defn start []
-  (mount/start-without #'sound-app.core/http-server
+  (mount/start-without ;; #'sound-app.core/http-server
                        #'sound-app.core/repl-server))
 
 (defn stop []
-  (mount/stop-except #'sound-app.core/http-server
+  (mount/stop-except ;; #'sound-app.core/http-server
                      #'sound-app.core/repl-server))
 
 (defn restart []
