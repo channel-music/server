@@ -16,7 +16,7 @@
   (layout/render "upload.html"))
 
 ;; TODO: Make configurable
-(def resource-path "resources/uploads")
+(def resource-path "resources/uploads/")
 
 (defn upload-file!
   "Store the uploaded temporary file in the directory given my `path`.
@@ -26,7 +26,7 @@
     (io/copy tempfile new-file)
     new-file))
 
-(defn save-music-file! [file]
+(defn create-song! [file]
   (let [tag (id3/read-tag file)]
     (db/create-song! {:title  (:title tag)
                       :artist (:artist tag)
@@ -35,13 +35,18 @@
                       ;; TODO: Handle null
                       :track  (Integer/parseUnsignedInt (:track tag))
                       ;; TODO: Store only path relative to resource-path
-                      :file   (.getPath file)})
+                      :file   (-> file
+                                  (.getPath)
+                                  ;; Relative position to resource-path
+                                  (.replace resource-path ""))})
     (redirect "/songs")))
 
 (defn songs-page
   "Displays all uploaded songs."
   []
-  (layout/render "songs.html" {:songs (db/all-songs)}))
+  (layout/render "songs.html" {:songs
+                               (->> (db/all-songs)
+                                    (sort-by :track))}))
 
 (defroutes home-routes
   (GET "/" [] (home-page))
@@ -50,4 +55,4 @@
   (POST "/upload" [file]
         (->> file
              (upload-file! resource-path)
-             (save-music-file!))))
+             (create-song!))))

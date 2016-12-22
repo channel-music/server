@@ -5,18 +5,45 @@
         <h3 class="title">All Songs</h3>
     </div>
 
-    <div class="row">
-        <ul class="songs">
+    <!-- TODO: Don't use table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th>#</th>
+                <th>Title</th>
+                <th>Arist</th>
+                <th>Album</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for song in songs %}
-            <li>
-                <p>{{ song.title }}</p>
-                <p>{{ song.artist }}</p>
-                <p>{{ song.album }}</p>
-                <p>{{ song.genre }}</p>
-                <p>{{ song.track }}</p>
-            </li>
+            <tr>
+                <td>
+                    <audio id="song-{{ song.id }}" preload="metadata">
+                        <source src="/uploads/{{ song.file }}" type="audio/mpeg" />
+                    </audio>
+
+                    <!-- <button on-click="sound_app.core.play_song({{ song.id }})"> -->
+                    <button onclick="sound_app.core.play_song(this, {{ song.id }})">
+                        |>
+                    </button>
+                </td>
+                <th scope="row">{{ song.track }}</th>
+                <td>{{ song.title }}</td>
+                <td>{{ song.artist }}</td>
+                <td>{{ song.album }}</td>
+            </tr>
             {% endfor %}
-        </ul>
+        </tbody>
+    </table>
+
+    <div class="row">
+        <a class="btn btn-primary" href="/upload">
+            Upload
+        </a>
     </div>
 </div>
+
+{% script "/js/app.js" %}
 {% endblock %}

@@ -54,6 +54,11 @@ ORDER BY id
 SELECT * FROM songs
 WHERE id = :id
 
+-- :name duplicate-song :? :1
+-- 
+SELECT COUNT(*) FROM songs
+WHERE title = :title, artist = :artist, album = :album
+
 -- :name delete-song! :! :n
 -- :doc delete a song given the id
 DELETE FROM songs

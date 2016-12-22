@@ -18,6 +18,8 @@
         (wrap-routes middleware/wrap-csrf)
         (wrap-routes middleware/wrap-formats))
     #'service-routes
+    (route/resources "/" {:root "public"}) ;; serve static files
+    (route/resources "/uploads" {:root "uploads"})
     (route/not-found
       (:body
         (error-page {:status 404
