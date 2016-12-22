@@ -1,8 +1,8 @@
 CREATE TABLE users
-(id SERIAL PRIMARY KEY,
- username VARCHAR(30) UNIQUE NOT NULL,
- email VARCHAR(30),
- password VARCHAR(300) NOT NULL);
+(id       SERIAL       NOT NULL PRIMARY KEY,
+ username VARCHAR(30)  UNIQUE NOT NULL,
+ email    VARCHAR(30),
+ password VARCHAR(100) NOT NULL);
 
 ---
 --- username is always queried
