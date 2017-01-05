@@ -69,26 +69,35 @@
                            :description "Sample Services"}}}}
 
   (context "/api" []
-           :tags ["base"]
+           :tags ["songs"]
 
            (GET "/songs" []
-                :return [Song]
-                (ok (db/all-songs)))
+             :return [Song]
+             :summary "Retrieve all songs."
+             (ok (db/all-songs)))
+
+           (GET "/songs/:id" []
+             :return (s/maybe Song)
+             :path-params [id :- Long]
+             :summary "Retrieve a specific song."
+             (if-let [song (db/song-by-id {:id id})]
+               (ok song)
+               (not-found)))
 
            ;; possible solution is to get the API to request ID3 data first,
            ;; then submit with the full required track data.
            (POST "/songs" []
-                 :return Song
-                 :body [file :- String]
-                 :summary "Create a new song using an MP3 file."
-                 :description "All song data is extracted from the ID3 metadata of the MP3"
-                 (ok (-> file
-                         (upload-file! resource-path)
-                         (create-song!))))
+             :return Song
+             :body [file String]
+             :summary "Create a new song using an MP3 file."
+             :description "All song data is extracted from the ID3 metadata of the MP3"
+             (ok (-> file
+                     (upload-file! resource-path)
+                     (create-song!))))
 
            (PUT "/songs/:id" []
-                :return Song
-                :path-params [id :- Long]
-                :body [song UpdatedSong]
-                :summary "Update song details."
-                (ok (db/song-by-id {:id id})))))
+             :return Song
+             :path-params [id :- Long]
+             :body [song UpdatedSong]
+             :summary "Update song details."
+             (ok (db/song-by-id {:id id})))))
