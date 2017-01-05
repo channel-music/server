@@ -69,50 +69,26 @@
                            :description "Sample Services"}}}}
 
   (context "/api" []
-    :tags ["base"]
+           :tags ["base"]
 
-    (GET "/songs" []
-      :return [Song]
-      (ok (db/all-songs)))
+           (GET "/songs" []
+                :return [Song]
+                (ok (db/all-songs)))
 
-    ;; possible solution is to get the API to request ID3 data first,
-    ;; then submit with the full required track data.
-    (POST "/songs" []
-      :return Song
-      :body [file :- String]
-      :summary "Create a new song using an MP3 file."
-      :description "All song data is extracted from the ID3 metadata of the MP3"
-      (ok (-> file
-              (upload-file! resource-path)
-              (create-song!))))
+           ;; possible solution is to get the API to request ID3 data first,
+           ;; then submit with the full required track data.
+           (POST "/songs" []
+                 :return Song
+                 :body [file :- String]
+                 :summary "Create a new song using an MP3 file."
+                 :description "All song data is extracted from the ID3 metadata of the MP3"
+                 (ok (-> file
+                         (upload-file! resource-path)
+                         (create-song!))))
 
-    (PUT "/songs/:id" []
-      :return Song
-      :path-params [id :- Long]
-      :body [song UpdatedSong]
-      :summary "Update song details."
-      (ok (db/song-by-id {:id id})))
-
-    (POST "/minus" []
-      :return      Long
-      :body-params [x :- Long, y :- Long]
-      :summary     "x-y with body-parameters."
-      (ok (- x y)))
-
-    (GET "/times/:x/:y" []
-      :return      Long
-      :path-params [x :- Long, y :- Long]
-      :summary     "x*y with path-parameters"
-      (ok (* x y)))
-
-    (POST "/divide" []
-      :return      Double
-      :form-params [x :- Long, y :- Long]
-      :summary     "x/y with form-parameters"
-      (ok (/ x y)))
-
-    (GET "/power" []
-      :return      Long
-      :header-params [x :- Long, y :- Long]
-      :summary     "x^y with header-parameters"
-      (ok (long (Math/pow x y))))))
+           (PUT "/songs/:id" []
+                :return Song
+                :path-params [id :- Long]
+                :body [song UpdatedSong]
+                :summary "Update song details."
+                (ok (db/song-by-id {:id id})))))
