@@ -61,6 +61,12 @@
         (db/create-song! song)
         song))))
 
+(defn update-song! [song]
+  ;; FIXME: still gotta validate uniquness
+  (if-let [errors (v/validate-update-song song)]
+    errors
+    (db/update-song! song)))
+
 (defapi service-routes
   {:swagger {:ui "/swagger-ui"
              :spec "/swagger.json"

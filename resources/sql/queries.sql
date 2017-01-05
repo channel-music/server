@@ -44,6 +44,13 @@ INSERT INTO songs
 (title, artist, album, genre, track, file)
 VALUES (:title, :artist, :album, :genre, :track, :file)
 
+-- :name update-song! :! :n
+-- :doc update an existing song record
+UPDATE songs
+SET title = :title, artist = :artist,
+    genre = :genre, track = :track
+WHERE id = :id
+
 -- :name all-songs :? :*
 -- :doc retrieve all songs
 SELECT * FROM songs

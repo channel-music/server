@@ -16,3 +16,10 @@
     :title [v/required]
     :file  [v/required]
     :track [v/required v/number])))
+
+(defn validate-update-song [song]
+  (format-validation-errors
+   (b/validate
+    song
+    :title [v/required]
+    :track [v/required])))
