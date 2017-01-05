@@ -12,7 +12,7 @@
                  [luminus-nrepl "0.1.4"]
                  [metosin/compojure-api "1.1.9"]
                  [metosin/ring-http-response "0.8.0"]
-                 [mount "0.1.10"]
+                 [mount "0.1.11"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.293" :scope "provided"]
                  [org.clojure/tools.cli "0.3.5"]

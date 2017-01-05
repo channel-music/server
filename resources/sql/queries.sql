@@ -50,14 +50,19 @@ SELECT * FROM songs
 ORDER BY id
 
 -- :name song-by-id :? :1
--- :doc retrieve a song given the id.
+-- :doc retrieve a song given the id
 SELECT * FROM songs
 WHERE id = :id
 
--- :name duplicate-song :? :1
--- 
-SELECT COUNT(*) FROM songs
-WHERE title = :title, artist = :artist, album = :album
+-- :name song-exists? :? :1
+-- :doc returns true if the song exists
+SELECT EXISTS (
+  SELECT 1 FROM songs
+  WHERE title = :title AND
+        -- FIXME: find a nicer way of dealing with this
+        (artist = :artist OR artist IS NULL) AND
+        (album  = :album  OR album  IS NULL)
+)
 
 -- :name delete-song! :! :n
 -- :doc delete a song given the id

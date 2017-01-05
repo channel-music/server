@@ -1,12 +1,12 @@
 (ns sound-app.routes.home
   (:require [sound-app.layout :as layout]
             [sound-app.db.core :as db]
+            [sound-app.validation :as v]
             [compojure.core :refer [defroutes GET POST]]
-            [ring.util.response :refer [redirect]]
-            [ring.util.http-response :as response]
+            [clojure.tools.logging :as log]
             [clojure.java.io :as io]
-            [claudio.id3 :as id3])
-  (:import (java.io File FileInputStream FileOutputStream)))
+            [claudio.id3 :as id3]
+            [ring.util.response :refer [redirect]]))
 
 (defn home-page []
   (layout/render "home.html"))
@@ -26,20 +26,37 @@
     (io/copy tempfile new-file)
     new-file))
 
-(defn create-song! [file]
+(defn file->song [file]
   (let [tag (id3/read-tag file)]
-    (db/create-song! {:title  (:title tag)
-                      :artist (:artist tag)
-                      :album  (:ablum tag)
-                      :genre  (:genre tag)
-                      ;; TODO: Handle null
-                      :track  (Integer/parseUnsignedInt (:track tag))
-                      ;; TODO: Store only path relative to resource-path
-                      :file   (-> file
-                                  (.getPath)
-                                  ;; Relative position to resource-path
-                                  (.replace resource-path ""))})
-    (redirect "/songs")))
+    {:title  (:title tag)
+     :artist (:artist tag)
+     :album  (:ablum tag)
+     :genre  (:genre tag)
+     :track  (Integer/parseUnsignedInt (:track tag))
+     ;; TODO: Store only path relative to resource-path
+     :file   (-> file
+                 (.getPath)
+                 ;; Relative position to resource-path
+                 (.replace resource-path ""))}))
+
+(defn validate-unique-song
+  "Validates that `song` is unique. Will return `nil` if unique, otherwise
+  will return a map containing errors."
+  [song]
+  (when (:exists (db/song-exists? song))
+    {:unique ["Song with that title, artist and album already exists."]}))
+
+(defn create-song! [file]
+  (let [song (file->song file)
+        ;; the backend ensures that the song is actually unique
+        ;; along with the other default validations.
+        validator (juxt validate-unique-song
+                        v/validate-create-song)]
+    (if-let [errors (apply merge (validator song))]
+      (log/error "Errors:" errors)
+      (do
+        (db/create-song! song)
+        (redirect "/songs")))))
 
 (defn songs-page
   "Displays all uploaded songs."

@@ -15,7 +15,7 @@ ALTER TABLE songs ADD CONSTRAINT songs_title_artist_album_unique
 UNIQUE (title, artist, album);
 
 ---
---- Disallow duplicate nulls (https://stackoverflow.com/questions/10468657/postgres-unique-multi-column-index-for-join-table/10468686#10468686)
+--- Disallow duplicate nulls (https://stackoverflow.com/questions/10468657/postgres-unique-multi-column-index-for-join-table/10468686)
 ---
 
 --- artist

@@ -3,10 +3,19 @@
   <head>
       <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>Upload a music file</title>
+      <title>Sound App</title>
   </head>
   <body>
-    <div id="navbar"></div>
+    <div id="navbar navbar-default">
+        <div class="navbar-header">
+            Sound App
+        </div>
+
+        <div class="nav navbar-nav">
+            <li><a href="/upload">Upload</a></li>
+            <li><a href="/songs">Songs</a></li>
+        </div>
+    </div>
     <div id="app">
         {% block content %}{% endblock %}
     </div>
