@@ -62,8 +62,8 @@
         song))))
 
 (defn update-song! [old-song new-song]
-  ;; FIXME: still gotta validate uniquness
   (let [song (merge old-song new-song)]
+    ;; FIXME: still gotta validate uniquness
     (if-let [errors (v/validate-update-song song)]
       errors
       (do

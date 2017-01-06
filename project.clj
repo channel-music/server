@@ -2,8 +2,7 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
 
-  :dependencies [[bouncer "1.0.0"]
-                 [compojure "1.5.1"]
+  :dependencies [[compojure "1.5.1"]
                  [conman "0.6.2"]
                  [cprop "0.1.9"]
                  [luminus-immutant "0.2.2"]
@@ -11,9 +10,7 @@
                  [luminus-nrepl "0.1.4"]
                  [metosin/compojure-api "1.1.9"]
                  [metosin/ring-http-response "0.8.0"]
-                 [mount "0.1.11"]
                  [org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.293" :scope "provided"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.postgresql/postgresql "9.4.1212"]
@@ -25,7 +22,13 @@
                  [ring-middleware-format "0.7.0"]
                  [ring-webjars "0.1.1"]
                  [ring/ring-defaults "0.2.1"]
-                 [selmer "1.10.2"]]
+                 [selmer "1.10.2"]
+                 ;; Clojurescript
+                 [org.clojure/clojurescript "1.9.293" :scope "provided"]
+                 [rum "0.10.7"]
+                 ;; Both
+                 [bouncer "1.0.0"]
+                 [mount "0.1.11"]]
 
   :min-lein-version "2.0.0"
 

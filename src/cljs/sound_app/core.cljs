@@ -1,18 +1,15 @@
-(ns sound-app.core)
+(ns sound-app.core
+  (:require [rum.core :as rum]))
 
-(defonce current-song (atom nil))
+(rum/defcs time-label < {:did-mount (fn [state]
+                                      (assoc state ::time (js/Date.)))}
+  [state label]
+  [:div label ": " (str (::time state))])
 
-(defn ^:export play-song [elem id]
-  (let [audio (.getElementById js/document (str "song-" id))]
-    (when (.-paused audio)
-      (when-let [[audio elem] @current-song]
-        (.pause audio)
-        (set! (.-textContent elem) "|>"))
-      (set! (.-textContent elem) "||")
-      (.play audio)
-      (reset! current-song [audio elem]))))
-
-(defn mount-components [])
+(defn mount-components []
+  (rum/mount
+   (time-label "The mount time is")
+   (.getElementById js/document "app")))
 
 (defn init! []
-  (println "Initializing app..."))
+  (mount-components))

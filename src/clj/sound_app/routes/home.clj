@@ -58,16 +58,8 @@
         (db/create-song! song)
         (redirect "/songs")))))
 
-(defn songs-page
-  "Displays all uploaded songs."
-  []
-  (layout/render "songs.html" {:songs
-                               (->> (db/all-songs)
-                                    (sort-by :track))}))
-
 (defroutes home-routes
   (GET "/" [] (home-page))
-  (GET "/songs" [] (songs-page))
   (GET "/upload" [] (upload-page))
   (POST "/upload" [file]
         (->> file
