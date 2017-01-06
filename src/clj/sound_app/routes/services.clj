@@ -61,11 +61,14 @@
         (db/create-song! song)
         song))))
 
-(defn update-song! [song]
+(defn update-song! [old-song new-song]
   ;; FIXME: still gotta validate uniquness
-  (if-let [errors (v/validate-update-song song)]
-    errors
-    (db/update-song! song)))
+  (let [song (merge old-song new-song)]
+    (if-let [errors (v/validate-update-song song)]
+      errors
+      (do
+        (db/update-song! song)
+        song))))
 
 (defn delete-song! [song]
   (io/delete-file (io/file resource-path (:file song)))
@@ -108,10 +111,10 @@
     (PUT "/songs/:id" []
       :return Song
       :path-params [id :- Long]
-      :body [song UpdatedSong]
+      :body [new-song UpdatedSong]
       :summary "Update song details."
-      (if-let [song (db/song-by-id {:id id})]
-        (ok (db/song-by-id {:id id}))
+      (if-let [old-song (db/song-by-id {:id id})]
+        (ok (update-song! old-song new-song))
         (not-found)))
 
     (DELETE "/songs/:id" []
