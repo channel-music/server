@@ -1,14 +1,14 @@
 (ns sound-app.core
-  (:require [rum.core :as rum]))
+  (:require [reagent.core :as r]))
 
-(rum/defcs time-label < {:did-mount (fn [state]
-                                      (assoc state ::time (js/Date.)))}
-  [state label]
-  [:div label ": " (str (::time state))])
+(defonce app-state (r/atom {}))
+
+(defn home-page []
+  [:h3 "Welcome to Sound App"])
 
 (defn mount-components []
-  (rum/mount
-   (time-label "The mount time is")
+  (r/render-component
+   [home-page]
    (.getElementById js/document "app")))
 
 (defn init! []

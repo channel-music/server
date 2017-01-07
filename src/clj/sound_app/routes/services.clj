@@ -3,6 +3,7 @@
             [sound-app.validation :as v]
             [schema.core :as s]
             [compojure.api.sweet :refer :all]
+            [compojure.api.upload :refer [TempFileUpload]]
             [clojure.java.io :as io]
             [claudio.id3 :as id3]
             [ring.util.http-response :refer :all]))
@@ -93,7 +94,7 @@
     ;; then submit with the full required track data.
     (POST "/songs" []
       :return Song
-      :body [file String]
+      :body [file TempFileUpload]
       :summary "Create a new song using an MP3 file."
       :description "All song data is extracted from the ID3 metadata of the MP3"
       (created (-> file
