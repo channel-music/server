@@ -1,8 +1,12 @@
 (ns sound-app.core
-  (:require [ajax.core :refer [GET POST]]
+  (:require [ajax.core :refer [GET POST DELETE]]
             [reagent.core :as r]))
 
 (defonce app-state (r/atom {}))
+
+(defn delete-song! [song]
+  (DELETE (str "/api/songs/" (:id song))
+          {:handler #(swap! app-state update :songs disj song)}))
 
 (defn upload-song! [target]
   (let [file (aget (.-files target) 0)
@@ -38,7 +42,7 @@
      [:th "Title"]
      [:th "Artist"]
      [:th "Album"]
-     [:th]]]
+     [:th {:colspan 2}]]]
    [:tbody
     (for [s (sort-by (juxt :artist :album :track) songs)]
       [:tr {:key (:id s)}
@@ -47,7 +51,9 @@
        [:td (:artist s)]
        [:td (:album s)]
        [:td [:button {:on-click #(play-song! s)}
-             "Play"]]])]])
+             "Play"]]
+       [:td [:button {:on-click #(delete-song! s)}
+             "Delete"]]])]])
 
 (defn home-page []
   [:div
@@ -66,5 +72,5 @@
    (.getElementById js/document "app")))
 
 (defn init! []
-  (GET "/api/songs" {:handler #(swap! app-state assoc :songs %)})
+  (GET "/api/songs" {:handler #(swap! app-state assoc :songs (set %))})
   (mount-components))
