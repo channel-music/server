@@ -36,12 +36,12 @@
      [:th "Artist"]
      [:th "Album"]]]
    [:tbody
-    (for [{:keys [id track title artist album]} songs]
-      [:tr {:key id}
-       [:th track]
-       [:td title]
-       [:td artist]
-       [:td album]])]])
+    (for [s (sort-by :track songs)]
+      [:tr {:key (:id s)}
+       [:th (:track s)]
+       [:td (:title s)]
+       [:td (:artist s)]
+       [:td (:album s)]])]])
 
 (defn home-page []
   [:div

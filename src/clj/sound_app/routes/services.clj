@@ -91,7 +91,7 @@
     ;; possible solution is to get the API to request ID3 data first,
     ;; then submit with the full required track data.
     (POST "/songs" []
-      :return Song
+      :return (s/either Song {:errors s/Any})
       :multipart-params [file :- upload/TempFileUpload]
       :middleware [upload/wrap-multipart-params]
       :summary "Create a new song using an MP3 file."
@@ -102,7 +102,7 @@
                       (create-song!))]
         (if (:errors resp)
           (bad-request resp)
-          (created resp))))
+          (created (str "/api/songs/" (:id resp)) resp))))
 
     (GET "/songs/:id" []
       :return (s/maybe Song)
