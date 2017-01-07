@@ -25,6 +25,7 @@
                  [selmer "1.10.2"]
                  ;; Clojurescript
                  [org.clojure/clojurescript "1.9.293" :scope "provided"]
+                 [cljs-ajax "0.5.8"]
                  [reagent "0.6.0"]
                  ;; Both
                  [bouncer "1.0.0"]

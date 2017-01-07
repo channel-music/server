@@ -38,11 +38,12 @@ WHERE id = :id
 -- Songs
 --------------------------------------------------
 
--- :name create-song! :! :n
+-- :name create-song<! :<! :1
 -- :doc creates a new song record
 INSERT INTO songs
 (title, artist, album, genre, track, file)
 VALUES (:title, :artist, :album, :genre, :track, :file)
+RETURNING id
 
 -- :name update-song! :! :n
 -- :doc update an existing song record

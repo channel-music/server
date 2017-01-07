@@ -3,7 +3,7 @@
             [sound-app.validation :as v]
             [schema.core :as s]
             [compojure.api.sweet :refer :all]
-            [compojure.api.upload :refer [TempFileUpload]]
+            [compojure.api.upload :as upload]
             [clojure.java.io :as io]
             [claudio.id3 :as id3]
             [ring.util.http-response :refer :all]))
@@ -21,7 +21,7 @@
 (defn upload-file!
   "Store the uploaded temporary file in the directory given my `path`.
   Returns the uploaded file."
-  [path {:keys [tempfile size filename]}]
+  [path {:keys [tempfile filename]}]
   (let [new-file (io/file path filename)]
     (io/copy tempfile new-file)
     new-file))
@@ -57,10 +57,8 @@
         validator (juxt validate-unique-song
                         v/validate-create-song)]
     (if-let [errors (apply merge (validator song))]
-      errors
-      (do
-        (db/create-song! song)
-        song))))
+      {:errors errors}
+      (merge song (db/create-song<! song)))))
 
 (defn update-song! [old-song new-song]
   (let [song (merge old-song new-song)]
@@ -94,12 +92,17 @@
     ;; then submit with the full required track data.
     (POST "/songs" []
       :return Song
-      :body [file TempFileUpload]
+      :multipart-params [file :- upload/TempFileUpload]
+      :middleware [upload/wrap-multipart-params]
       :summary "Create a new song using an MP3 file."
       :description "All song data is extracted from the ID3 metadata of the MP3"
-      (created (-> file
-                   (upload-file! resource-path)
-                   (create-song!))))
+      ;; TODO
+      (let [resp (->> file
+                      (upload-file! resource-path)
+                      (create-song!))]
+        (if (:errors resp)
+          (bad-request resp)
+          (created resp))))
 
     (GET "/songs/:id" []
       :return (s/maybe Song)

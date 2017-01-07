@@ -1,10 +1,58 @@
 (ns sound-app.core
-  (:require [reagent.core :as r]))
+  (:require [ajax.core :refer [GET POST]]
+            [reagent.core :as r]))
 
 (defonce app-state (r/atom {}))
 
+(defn upload-song! [target]
+  (let [file (aget (.-files target) 0)
+        form-data (doto (js/FormData.)
+                    (.append "file" file))]
+    (POST "/api/songs" {:body form-data
+                        :handler #(swap! app-state update :songs conj %)
+                        :error-handler #(println "Failed to upload file:" %)})))
+
+(defn upload-component []
+  [:form#upload-form {:enc-type "multipart/form-data"
+                      :method "POST"}
+   [:label "Upload file:"]
+   [:input#upload-file {:type "file"
+                        :name "upload-file"}]])
+
+(defn progress-bar [min max value]
+  [:div.progress-bar {:role "progressbar"
+                      :aria-valuenow value
+                      :aria-valuemin min
+                      :aria-valuemax max
+                      :style {:width "60%"}}
+   [:span.sr-only (str value "% Complete")]])
+
+(defn songs-component [songs]
+  [:table.table.table-striped
+   [:thead
+    [:tr
+     [:th "#"]
+     [:th "Title"]
+     [:th "Artist"]
+     [:th "Album"]]]
+   [:tbody
+    (for [{:keys [id track title artist album]} songs]
+      [:tr {:key id}
+       [:th track]
+       [:td title]
+       [:td artist]
+       [:td album]])]])
+
 (defn home-page []
-  [:h3 "Welcome to Sound App"])
+  [:div
+   [:h3 "Sound App"]
+   (songs-component (:songs @app-state))
+   [:div#upload
+    [upload-component]
+    [:button.btn.btn-default.btn-primary
+     {:on-click #(upload-song!
+                  (.getElementById js/document "upload-file"))}
+     "Upload"]]])
 
 (defn mount-components []
   (r/render-component
@@ -12,4 +60,5 @@
    (.getElementById js/document "app")))
 
 (defn init! []
+  (GET "/api/songs" {:handler #(swap! app-state assoc :songs %)})
   (mount-components))
