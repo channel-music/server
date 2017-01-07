@@ -27,6 +27,9 @@
                       :style {:width "60%"}}
    [:span.sr-only (str value "% Complete")]])
 
+(defn play-song! [{:keys [file]}]
+  (.play (js/Audio. (str "/uploads/" file))))
+
 (defn songs-component [songs]
   [:table.table.table-striped
    [:thead
@@ -34,14 +37,17 @@
      [:th "#"]
      [:th "Title"]
      [:th "Artist"]
-     [:th "Album"]]]
+     [:th "Album"]
+     [:th]]]
    [:tbody
     (for [s (sort-by :track songs)]
       [:tr {:key (:id s)}
        [:th (:track s)]
        [:td (:title s)]
        [:td (:artist s)]
-       [:td (:album s)]])]])
+       [:td (:album s)]
+       [:td [:button {:on-click #(play-song! s)}
+             "Play"]]])]])
 
 (defn home-page []
   [:div
