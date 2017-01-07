@@ -33,7 +33,7 @@
   (let [tag (id3/read-tag file)]
     {:title  (:title tag)
      :artist (:artist tag)
-     :album  (:ablum tag)
+     :album  (:album tag)
      :genre  (:genre tag)
      :track  (Integer/parseUnsignedInt (:track tag))
      ;; TODO: Store only path relative to resource-path
