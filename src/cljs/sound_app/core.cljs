@@ -40,7 +40,7 @@
      [:th "Album"]
      [:th]]]
    [:tbody
-    (for [s (sort-by :track songs)]
+    (for [s (sort-by (juxt :artist :album :track) songs)]
       [:tr {:key (:id s)}
        [:th (:track s)]
        [:td (:title s)]
