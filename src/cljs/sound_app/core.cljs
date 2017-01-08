@@ -16,6 +16,7 @@
                         :handler #(swap! app-state update :songs conj %)
                         :error-handler #(println "Failed to upload file:" %)})))
 
+;; FIXME
 (defn upload-component []
   [:form#upload-form {:enc-type "multipart/form-data"
                       :method "POST"}

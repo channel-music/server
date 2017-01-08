@@ -15,7 +15,7 @@
                    :genre  (s/maybe String)
                    :track  s/Int
                    :file   String})
-
+;; Data required to update a song
 (s/defschema UpdatedSong (dissoc Song :id :file))
 
 (defn upload-file!
@@ -91,7 +91,7 @@
     ;; possible solution is to get the API to request ID3 data first,
     ;; then submit with the full required track data.
     (POST "/songs" []
-      :return (s/either Song {:errors s/Any})
+      :return Song
       :multipart-params [file :- upload/TempFileUpload]
       :middleware [upload/wrap-multipart-params]
       :summary "Create a new song using an MP3 file."
