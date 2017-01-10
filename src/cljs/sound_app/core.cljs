@@ -1,6 +1,7 @@
 (ns sound-app.core
   (:require [ajax.core :refer [GET POST DELETE]]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [sound-app.components :as c]))
 
 (defonce app-state (r/atom {}))
 
@@ -57,15 +58,20 @@
              "Delete"]]])]])
 
 (defn home-page []
-  [:div
-   [:h3 "Sound App"]
-   (songs-component (:songs @app-state))
-   [:div#upload
-    [upload-component]
-    [:button.btn.btn-default.btn-primary
-     {:on-click #(upload-song!
-                  (.getElementById js/document "upload-file"))}
-     "Upload"]]])
+  [:div#wrapper
+   [c/sidebar [["Songs" "#"], ["Uploads" "#"]]]
+   [:div#page-content-wrapper
+    [:div.container-fluid
+     [c/menu-toggle "Toggle Menu"]
+     [:div.row>div.col-lg-12
+      [:h3 "Sound App"]
+      (songs-component (:songs @app-state))
+      [:div#upload
+       [upload-component]
+       [:button.btn.btn-default.btn-primary
+        {:on-click #(upload-song!
+                     (.getElementById js/document "upload-file"))}
+        "Upload"]]]]]])
 
 (defn mount-components []
   (r/render-component

@@ -29,18 +29,24 @@
 ;; TODO: Make configurable
 (def resource-path "resources/uploads/")
 
-(defn file->song [file]
-  (let [tag (id3/read-tag file)]
-    {:title  (:title tag)
-     :artist (:artist tag)
-     :album  (:album tag)
-     :genre  (:genre tag)
-     :track  (Integer/parseUnsignedInt (:track tag))
-     ;; TODO: Store only path relative to resource-path
-     :file   (-> file
-                 (.getPath)
-                 ;; Relative position to resource-path
-                 (.replace resource-path ""))}))
+;; FIXME: handle invalid files
+(defn file->song
+  "Extracts song data from the file. Returns `nil` on read failure."
+  [file]
+  (try
+    (let [tag (id3/read-tag file)]
+      {:title  (:title tag)
+       :artist (:artist tag)
+       :album  (:album tag)
+       :genre  (:genre tag)
+       :track  (Integer/parseUnsignedInt (:track tag))
+       ;; TODO: Store only path relative to resource-path
+       :file   (-> file
+                   (.getPath)
+                   ;; Relative position to resource-path
+                   (.replace resource-path ""))})
+    (catch org.jaudiotagger.audio.exceptions.CannotReadException _
+      nil)))
 
 (defn validate-unique-song
   "Validates that `song` is unique. Will return `nil` if unique, otherwise
@@ -49,16 +55,23 @@
   (when (:exists (db/song-exists? song))
     {:unique ["Song with that title, artist and album already exists."]}))
 
-
-(defn create-song! [file]
-  (let [song (file->song file)
+(defn create-song! [tempfile]
+  (let [file (upload-file! resource-path tempfile)
+        song (file->song file)
         ;; the backend ensures that the song is actually unique
         ;; along with the other default validations.
         validator (juxt validate-unique-song
                         v/validate-create-song)]
-    (if-let [errors (apply merge (validator song))]
-      {:errors errors}
-      (merge song (db/create-song<! song)))))
+    (if song
+      (if-let [errors (apply merge (validator song))]
+        (do
+          ;; TODO: find a better way of handling files
+          (io/delete-file file)
+          {:errors errors})
+        (merge song (db/create-song<! song)))
+      (do
+        (io/delete-file file)
+        {:errors {:file ["Invalid audio file."]}}))))
 
 (defn update-song! [old-song new-song]
   (let [song (merge old-song new-song)]
@@ -97,9 +110,7 @@
       :summary "Create a new song using an MP3 file."
       :description "All song data is extracted from the ID3 metadata of the MP3"
       ;; TODO
-      (let [resp (->> file
-                      (upload-file! resource-path)
-                      (create-song!))]
+      (let [resp (create-song! file)]
         (if (:errors resp)
           (bad-request resp)
           (created (str "/api/songs/" (:id resp)) resp))))
