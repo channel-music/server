@@ -29,7 +29,8 @@
                  [reagent "0.6.0"]
                  ;; Both
                  [bouncer "1.0.0"]
-                 [mount "0.1.11"]]
+                 [mount "0.1.11"]
+                 [secretary "1.2.3"]]
 
   :min-lein-version "2.0.0"
 

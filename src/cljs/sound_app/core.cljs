@@ -1,7 +1,11 @@
 (ns sound-app.core
   (:require [ajax.core :refer [GET POST DELETE]]
-            [reagent.core :as r]
-            [sound-app.components :as c]))
+            [goog.events :as events]
+            [goog.history.EventType :as EventType]
+            [sound-app.components :as c]
+            [secretary.core :as secretary :refer-macros [defroute]]
+            [reagent.core :as r])
+  (:import goog.History))
 
 (defonce app-state (r/atom {}))
 
@@ -57,26 +61,62 @@
        [:td [:button {:on-click #(delete-song! s)}
              "Delete"]]])]])
 
-(defn home-page []
+(defn upload-page []
+  [:div#upload
+   [upload-component]
+   [:button.btn.btn-default.btn-primary
+    {:on-click #(upload-song!
+                 (.getElementById js/document "upload-file"))}
+    "Upload"]])
+
+(defn songs-page []
+  [songs-component (:songs @app-state)])
+
+(defmulti current-page #(:page @app-state))
+(defmethod current-page :songs []
+  [songs-page])
+(defmethod current-page :upload []
+  [upload-page])
+;; TODO: Make 404 page
+(defmethod current-page :default []
+  [songs-page])
+
+(defn main-page []
   [:div#wrapper
-   [c/sidebar [["Songs" "#"], ["Uploads" "#"]]]
+   [c/sidebar [["Songs" "#/songs"], ["Upload" "#/upload"]]]
    [:div#page-content-wrapper
     [:div.container-fluid
      #_[c/menu-toggle "Toggle Menu"]
      [:div.row>div.col-lg-12
-      [songs-component (:songs @app-state)]
-      [:div#upload
-       [upload-component]
-       [:button.btn.btn-default.btn-primary
-        {:on-click #(upload-song!
-                     (.getElementById js/document "upload-file"))}
-        "Upload"]]]]]])
+      [current-page]]]]])
+
+(defn hook-browser-navigation! []
+  (doto (History.)
+    (events/listen
+     EventType/NAVIGATE
+     (fn [event]
+       (secretary/dispatch! (.-token event))))
+    (.setEnabled true)))
+
+(defn app-routes []
+  (secretary/set-config! :prefix "#")
+
+  (defroute "/" []
+    (swap! app-state assoc :page :songs))
+  (defroute "/songs" []
+    (swap! app-state assoc :page :songs))
+
+  (defroute "/upload" []
+    (swap! app-state assoc :page :upload))
+
+  (hook-browser-navigation!))
 
 (defn mount-components []
   (r/render-component
-   [home-page]
+   [main-page]
    (.getElementById js/document "app")))
 
 (defn init! []
-  (GET "/api/songs" {:handler #(swap! app-state assoc :songs (set %))})
-  (mount-components))
+  (app-routes)
+  (mount-components)
+  (GET "/api/songs" {:handler #(swap! app-state assoc :songs (set %))}))
