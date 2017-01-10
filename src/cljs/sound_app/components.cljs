@@ -6,6 +6,7 @@
    [:ul.sidebar-nav
     [:li.sidebar-brand>a {:href "#"} "Sound App"]
     (for [[name href] links]
+      ^{:key (hash name)}
       [:li>a {:href href} name])]])
 
 (defn- menu-toggle-render [child]

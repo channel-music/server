@@ -44,7 +44,7 @@
      [:th "Title"]
      [:th "Artist"]
      [:th "Album"]
-     [:th {:colspan 2}]]]
+     [:th {:col-span 2}]]]
    [:tbody
     (for [s (sort-by (juxt :artist :album :track) songs)]
       [:tr {:key (:id s)}
@@ -62,10 +62,9 @@
    [c/sidebar [["Songs" "#"], ["Uploads" "#"]]]
    [:div#page-content-wrapper
     [:div.container-fluid
-     [c/menu-toggle "Toggle Menu"]
+     #_[c/menu-toggle "Toggle Menu"]
      [:div.row>div.col-lg-12
-      [:h3 "Sound App"]
-      (songs-component (:songs @app-state))
+      [songs-component (:songs @app-state)]
       [:div#upload
        [upload-component]
        [:button.btn.btn-default.btn-primary
