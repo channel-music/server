@@ -2,11 +2,15 @@
   (:require [ajax.core :refer [DELETE]]
             [sound-app.db :refer [app-state]]))
 
-(defn delete-song! [song]
+(defn delete-song!
+  "Request that a song is deleted. Removes from app state on success."
+  [song]
   (DELETE (str "/api/songs/" (:id song))
           {:handler #(swap! app-state update :songs disj song)}))
 
-(defn play-song! [{:keys [file]}]
+(defn play-song!
+  "Play the given song."
+  [{:keys [file]}]
   (.play (js/Audio. (str "/uploads/" file))))
 
 (defn songs-component [songs]
@@ -20,7 +24,8 @@
      [:th {:col-span 2}]]]
    [:tbody
     (for [s (sort-by (juxt :artist :album :track) songs)]
-      [:tr {:key (:id s)}
+      ^{:key (:id s)}
+      [:tr
        [:th (:track s)]
        [:td (:title s)]
        [:td (:artist s)]

@@ -1,13 +1,16 @@
 (ns sound-app.components
+  "Reusable view components."
   (:require [reagent.core :as reagent]))
 
 (defn sidebar [links]
   [:div#sidebar-wrapper
    [:ul.sidebar-nav
-    [:li.sidebar-brand>a {:href "#"} "Sound App"]
+    ^{:key (hash "root")} ;; TODO: find more robust method
+    [:li.sidebar-brand
+     [:a {:href "#"} "Sound App"]]
     (for [[name href] links]
       ^{:key (hash name)}
-      [:li>a {:href href} name])]])
+      [:li [:a {:href href} name]])]]) 
 
 (defn- menu-toggle-render [child]
   [:div.btn.btn-default child])

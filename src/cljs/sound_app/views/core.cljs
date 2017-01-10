@@ -9,7 +9,11 @@
             [reagent.core :as r])
   (:import goog.History))
 
-(defmulti current-page #(:page @app-state))
+;; TODO: Find a less DRY way of defining these. Possibly through
+;; TODO: a map. Same goes for route definitions below.
+(defmulti current-page
+  "Returns the component for the currently used page."
+  #(:page @app-state))
 (defmethod current-page :songs []
   [songs-page])
 (defmethod current-page :upload []
@@ -18,7 +22,9 @@
 (defmethod current-page :default []
   [songs-page])
 
-(defn main-page []
+(defn main-page
+  "Main view page, all other pages are rendered as children of this one."
+  []
   [:div#wrapper
    [c/sidebar [["Songs" "#/songs"], ["Upload" "#/upload"]]]
    [:div#page-content-wrapper
@@ -27,7 +33,9 @@
      [:div.row>div.col-lg-12
       [current-page]]]]])
 
-(defn- hook-browser-navigation! []
+(defn- hook-browser-navigation!
+  "Hook browser history in to secretary config."
+  []
   (doto (History.)
     (events/listen
      EventType/NAVIGATE
@@ -38,14 +46,13 @@
 (defn setup-app-routes! []
   (secretary/set-config! :prefix "#")
 
-  (defroute "/" []
+  ;; TODO: Use names instead of strings
+  (defroute root-path "/" []
     (swap! app-state assoc :page :songs))
-  (defroute "/songs" []
+  (defroute songs-path "/songs" []
     (swap! app-state assoc :page :songs))
 
-  (defroute "/upload" []
+  (defroute upload-path "/upload" []
     (swap! app-state assoc :page :upload))
 
   (hook-browser-navigation!))
-
-
