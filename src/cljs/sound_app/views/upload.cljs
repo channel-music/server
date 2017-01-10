@@ -1,4 +1,6 @@
-(ns sound-app.views.upload)
+(ns sound-app.views.upload
+  (:require [sound-app.db :refer [app-state]]
+            [ajax.core :refer [POST]]))
 
 ;; FIXME
 (defn upload-component []
