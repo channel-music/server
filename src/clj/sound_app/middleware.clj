@@ -6,7 +6,6 @@
             [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.format :refer [wrap-restful-format]]
             [sound-app.config :refer [env]]
-            [ring.middleware.flash :refer [wrap-flash]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]])
   (:import [javax.servlet ServletContext]))
 
@@ -55,7 +54,6 @@
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
       wrap-webjars
-      wrap-flash
       (wrap-defaults
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)))
