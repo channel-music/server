@@ -1,0 +1,25 @@
+version: '2'
+services:
+  db:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_DB=sound_app_dev
+      - POSTGRES_USER=sound_app
+      - POSTGRES_PASSWORD=password
+    # HACK: For working on the plane :)
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-dev
+    depends_on:
+      - db
+    links:
+      - db
+    volumes:
+      - .:/usr/src
+    ports:
+      - "3000:3000"
+      - "53157:53157"

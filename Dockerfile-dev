@@ -1,0 +1,16 @@
+FROM clojure:lein-alpine
+MAINTAINER Antonis Kalou <kalouantonis@gmail.com>
+
+# Enable the fast version of trampoline
+ENV LEIN_FAST_TRAMPOLINE 1
+
+WORKDIR /usr/src
+# Files aren't copied yet, so just copy what's needed
+# for running lein deps.
+COPY project.clj /usr/src
+# Pre-download dependencies
+RUN lein deps
+
+EXPOSE 3000
+
+CMD ["lein", "trampoline", "run"]
