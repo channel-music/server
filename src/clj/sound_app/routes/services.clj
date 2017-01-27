@@ -27,7 +27,7 @@
     new-file))
 
 ;; TODO: Make configurable
-(def resource-path "resources/uploads/")
+(def resource-path (io/resource "uploads"))
 
 ;; FIXME: handle invalid files
 (defn file->song
@@ -41,10 +41,11 @@
        :genre  (:genre tag)
        :track  (Integer/parseUnsignedInt (:track tag))
        ;; TODO: Store only path relative to resource-path
+       ;; FIXME: This whole thing is a HACK
        :file   (-> file
                    (.getPath)
                    ;; Relative position to resource-path
-                   (.replace resource-path ""))})
+                   (.replace (.getPath resource-path) ""))})
     (catch org.jaudiotagger.audio.exceptions.CannotReadException _
       nil)))
 

@@ -56,6 +56,9 @@
       wrap-webjars
       (wrap-defaults
         (-> site-defaults
+            ;; Disable all possible tracking mechanism
+            ;; and wear tin-foil hat.
+            (merge {:session false, :cookies false})
             (assoc-in [:security :anti-forgery] false)))
       wrap-context
       wrap-internal-error))
