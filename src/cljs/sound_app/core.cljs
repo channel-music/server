@@ -12,4 +12,4 @@
 (defn init! []
   (views/setup-app-routes!)
   (mount-components)
-  (GET "/api/songs" {:handler #(swap! app-state assoc :songs (set %))}))
+  (GET "/api/songs" {:handler #(swap! app-state assoc :songs %)}))

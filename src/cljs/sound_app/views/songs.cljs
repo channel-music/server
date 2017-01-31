@@ -1,5 +1,6 @@
 (ns sound-app.views.songs
   (:require [ajax.core :refer [DELETE]]
+            [clojure.zip :as z]
             [sound-app.db :refer [app-state]]))
 
 (defn delete-song!
@@ -8,10 +9,42 @@
   (DELETE (str "/api/songs/" (:id song))
           {:handler #(swap! app-state update :songs disj song)}))
 
+(defn current-song [queue]
+  (and queue (z/node queue)))
+
 (defn play-song!
   "Play the given song."
-  [{:keys [file]}]
-  (.play (js/Audio. (str "/uploads/" file))))
+  [{:keys [file] :as song}]
+  (if-let [queue (:play-queue @app-state)]
+    (->> file
+         (str "/uploads/")
+         (js/Audio.)
+         (.play))
+    ;; Create fresh play queue
+    (let [{:keys [songs]} @app-state]
+      ;; FIXME: Handle case where play-queue is still nil
+      (swap! app-state assoc :play-queue (-> songs
+                                             (z/vector-zip)
+                                             (z/down)))
+      (play-song! song))))
+
+(defn audio-player-component []
+  (let [queue (:play-queue @app-state)]
+    (fn []
+      [:div#audio-player
+       #_[:div#info
+        [:p (:title (current-song queue))]]
+       [:div#controls
+        [:button#prev {:on-click #(play-song! (-> (z/right queue)
+                                                  (z/node)))}
+         "<<"]
+        [:button#play {:on-click #(play-song! (or (current-song queue)
+                                                  ;; Pick a random song if there isn't one
+                                                  (rand-nth (vec (:songs @app-state)))))}
+         "|>"]
+        [:button#next {:on-click #(play-song! (-> (z/left queue)
+                                                  (z/node)))}]
+        ">>"]])))
 
 (defn songs-component [songs]
   [:table.table.table-striped
@@ -36,4 +69,6 @@
              "Delete"]]])]])
 
 (defn songs-page []
-  [songs-component (:songs @app-state)])
+  [:div#songs
+   [songs-component (:songs @app-state)]
+   [audio-player-component]])

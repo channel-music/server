@@ -2,7 +2,6 @@
   (:require [sound-app.env :refer [defaults]]
             [clojure.tools.logging :as log]
             [sound-app.layout :refer [*app-context* error-page]]
-            [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.format :refer [wrap-restful-format]]
             [sound-app.config :refer [env]]
@@ -34,14 +33,6 @@
                      :title "Something very bad has happened!"
                      :message "We've dispatched a team of highly trained gnomes to take care of the problem."})))))
 
-(defn wrap-csrf [handler]
-  (wrap-anti-forgery
-    handler
-    {:error-response
-     (error-page
-       {:status 403
-        :title "Invalid anti-forgery token"})}))
-
 (defn wrap-formats [handler]
   (let [wrapped (wrap-restful-format
                   handler
@@ -60,5 +51,6 @@
             ;; and wear tin-foil hat.
             (merge {:session false, :cookies false})
             (assoc-in [:security :anti-forgery] false)))
+      wrap-formats
       wrap-context
       wrap-internal-error))
