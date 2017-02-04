@@ -53,7 +53,6 @@
    :css-dirs ["resources/public/css"]
    :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
-
   :profiles
   {:uberjar {:omit-source true
              :prep-tasks ["compile" ["cljsbuild" "once" "min"]]
