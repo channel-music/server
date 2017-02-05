@@ -18,4 +18,4 @@ To start a web server for the application, run:
 
 ## License
 
-Copyright © 2017 Antonis Kalou
+Licensed under [Apache License v2](LICENSE).
