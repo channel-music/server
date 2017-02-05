@@ -5,6 +5,7 @@
             [schema.core :as s]
             [compojure.api.sweet :refer :all]
             [compojure.api.upload :as upload]
+            [clojure.java.io :as io]
             [ring.util.http-response :as ring-response]))
 
 (s/defschema Song {:id     Long
@@ -51,7 +52,7 @@
     (GET "/songs" []
       :return [Song]
       :summary "Retrieve all songs."
-      (ok (songs/all-songs)))
+      (ring-response/ok (songs/all-songs)))
 
     ;; possible solution is to get the API to request ID3 data first,
     ;; then submit with the full required track data.
