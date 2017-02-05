@@ -1,6 +1,6 @@
-(ns sound-app.doo-runner
+(ns channel.doo-runner
   (:require [doo.runner :refer-macros [doo-tests]]
-            [sound-app.core-test]))
+            [channel.core-test]))
 
-(doo-tests 'sound-app.core-test)
+(doo-tests 'channel.core-test)
 

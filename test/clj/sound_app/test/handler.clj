@@ -1,7 +1,7 @@
-(ns sound-app.test.handler
+(ns channel.test.handler
   (:require [clojure.test :refer :all]
             [ring.mock.request :refer :all]
-            [sound-app.handler :refer :all]))
+            [channel.handler :refer :all]))
 
 (deftest test-app
   (testing "main route"

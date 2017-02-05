@@ -1,6 +1,6 @@
-(defproject sound-app "0.1.0-SNAPSHOT"
+(defproject channel "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :url "https://github.com/kalouantonis/channel"
 
   :dependencies [[compojure "1.5.1"]
                  [conman "0.6.2"]
@@ -38,7 +38,7 @@
   :source-paths ["src/clj" "src/cljc"]
   :resource-paths ["resources" "target/cljsbuild"]
   :target-path "target/%s/"
-  :main sound-app.core
+  :main channel.core
   :migratus {:store :database :db ~(get (System/getenv) "DATABASE_URL")}
 
   :plugins [[lein-cprop "1.0.1"]
@@ -70,7 +70,7 @@
 
 
              :aot :all
-             :uberjar-name "sound-app.jar"
+             :uberjar-name "channel.jar"
              :source-paths ["env/prod/clj"]
              :resource-paths ["env/prod/resources"]}
 
@@ -94,7 +94,7 @@
                    {:app
                     {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
                      :compiler
-                     {:main "sound-app.app"
+                     {:main "channel.app"
                       :asset-path "/js/out"
                       :output-to "target/cljsbuild/public/js/app.js"
                       :output-dir "target/cljsbuild/public/js/out"
@@ -117,7 +117,7 @@
                     {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
                      :compiler
                      {:output-to "target/test.js"
-                      :main "sound-app.doo-runner"
+                      :main "channel.doo-runner"
                       :optimizations :whitespace
                       :pretty-print true}}}}
 

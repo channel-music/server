@@ -1,14 +1,8 @@
-# sound-app
+# Channel
 
-generated using Luminus version "2.9.11.18"
+A self-hosted music streaming application.
 
-FIXME
-
-## TODO
-
-- [ ] Add validations for duplicate tracks
-- [ ] Fix file upload locations
-- [ ] Update tests
+**WARNING: This project is heavily WIP**
 
 ## Prerequisites
 
@@ -24,4 +18,4 @@ To start a web server for the application, run:
 
 ## License
 
-Copyright © 2016 FIXME
+Copyright © 2017 Antonis Kalou

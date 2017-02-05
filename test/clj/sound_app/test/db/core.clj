@@ -1,17 +1,17 @@
-(ns sound-app.test.db.core
-  (:require [sound-app.db.core :refer [*db*] :as db]
+(ns channel.test.db.core
+  (:require [channel.db.core :refer [*db*] :as db]
             [luminus-migrations.core :as migrations]
             [clojure.test :refer :all]
             [clojure.java.jdbc :as jdbc]
-            [sound-app.config :refer [env]]
+            [channel.config :refer [env]]
             [mount.core :as mount]))
 
 (use-fixtures
   :once
   (fn [f]
     (mount/start
-      #'sound-app.config/env
-      #'sound-app.db.core/*db*)
+      #'channel.config/env
+      #'channel.db.core/*db*)
     (migrations/migrate ["migrate"] (select-keys env [:database-url]))
     (f)))
 

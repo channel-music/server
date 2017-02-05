@@ -1,15 +1,15 @@
 (ns user
   (:require [mount.core :as mount]
-            [sound-app.figwheel :refer [start-fw stop-fw cljs]]
-            sound-app.core))
+            [channel.figwheel :refer [start-fw stop-fw cljs]]
+            channel.core))
 
 (defn start []
-  (mount/start-without ;; #'sound-app.core/http-server
-                       #'sound-app.core/repl-server))
+  (mount/start-without ;; #'channel.core/http-server
+                       #'channel.core/repl-server))
 
 (defn stop []
-  (mount/stop-except ;; #'sound-app.core/http-server
-                     #'sound-app.core/repl-server))
+  (mount/stop-except ;; #'channel.core/http-server
+                     #'channel.core/repl-server))
 
 (defn restart []
   (stop)
