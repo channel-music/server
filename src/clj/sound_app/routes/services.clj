@@ -4,9 +4,26 @@
             [schema.core :as s]
             [compojure.api.sweet :refer :all]
             [compojure.api.upload :as upload]
+            [ring.util.http-response :as ring-response]
             [clojure.java.io :as io]
-            [claudio.id3 :as id3]
-            [ring.util.http-response :refer :all]))
+            [clojure.tools.logging :as log])
+  (:import (com.mpatric.mp3agic Mp3File)))
+
+(defn parse-id3
+  "Takes a file and attempts to parse MP3 ID3 data from it."
+  [file]
+  (-> file
+      Mp3File.
+      ;; TODO: support other versions
+      (.getId3v2Tag)))
+
+(defn save-file!
+  "Store the uploaded temporary file in the directory given my `path`.
+  Returns the uploaded file."
+  [path {:keys [tempfile filename]}]
+  (let [new-file (io/file path filename)]
+    (io/copy tempfile new-file)
+    new-file))
 
 (s/defschema Song {:id     Long
                    :title  String
@@ -18,14 +35,6 @@
 ;; Data required to update a song
 (s/defschema UpdatedSong (dissoc Song :id :file))
 
-(defn upload-file!
-  "Store the uploaded temporary file in the directory given my `path`.
-  Returns the uploaded file."
-  [path {:keys [tempfile filename]}]
-  (let [new-file (io/file path filename)]
-    (io/copy tempfile new-file)
-    new-file))
-
 ;; TODO: Make configurable
 (def resource-path (io/resource "uploads"))
 
@@ -33,21 +42,12 @@
 (defn file->song
   "Extracts song data from the file. Returns `nil` on read failure."
   [file]
-  (try
-    (let [tag (id3/read-tag file)]
-      {:title  (:title tag)
-       :artist (:artist tag)
-       :album  (:album tag)
-       :genre  (:genre tag)
-       :track  (Integer/parseUnsignedInt (:track tag))
-       ;; TODO: Store only path relative to resource-path
-       ;; FIXME: This whole thing is a HACK
-       :file   (-> file
-                   (.getPath)
-                   ;; Relative position to resource-path
-                   (.replace (.getPath resource-path) ""))})
-    (catch org.jaudiotagger.audio.exceptions.CannotReadException _
-      nil)))
+  (when-let [tag (parse-id3 file)]
+    {:title  (.getTitle tag)
+     :artist (.getArtist tag)
+     :album  (.getAlbum tag)
+     :genre  (.getGenre tag)
+     :track  (Integer/parseUnsignedInt (.getTrack tag))}))
 
 (defn validate-unique-song
   "Validates that `song` is unique. Will return `nil` if unique, otherwise
@@ -56,36 +56,37 @@
   (when (:exists (db/song-exists? song))
     {:unique ["Song with that title, artist and album already exists."]}))
 
-(defn create-song! [tempfile]
-  (let [file (upload-file! resource-path tempfile)
-        song (file->song file)
+(defn create-song! [{:keys [tempfile]}]
+  (let [song (file->song tempfile)
         ;; the backend ensures that the song is actually unique
         ;; along with the other default validations.
         validator (juxt validate-unique-song
                         v/validate-create-song)]
     (if song
       (if-let [errors (apply merge (validator song))]
-        (do
-          ;; TODO: find a better way of handling files
-          (io/delete-file file)
-          {:errors errors})
-        (merge song (db/create-song<! song)))
-      (do
-        (io/delete-file file)
-        {:errors {:file ["Invalid audio file."]}}))))
+        {:errors errors}
+        ;; TODO: Store only path relative to resource-path
+        ;; FIXME: This whole thing is a HACK
+        (let [file-path (-> (save-file! resource-path tempfile)
+                            (.getPath)
+                            (.replace (.getPath resource-path) ""))]
+          (->> file-path
+               (assoc song :file)
+               db/create-song<!
+               (merge song))))
+      {:errors {:file ["Invalid audio file."]}})))
 
 (defn update-song! [old-song new-song]
   (let [song (merge old-song new-song)]
     ;; FIXME: still gotta validate uniquness
     (if-let [errors (v/validate-update-song song)]
-      errors
-      (do
-        (db/update-song! song)
-        song))))
+      (ring-response/bad-request errors)
+      (ring-response/ok (db/update-song! song)))))
 
 (defn delete-song! [song]
   (io/delete-file (io/file resource-path (:file song)))
-  (db/delete-song! song))
+  (db/delete-song! song)
+  (ring-response/no-content))
 
 (defapi service-routes
   {:swagger {:ui "/swagger-ui"
@@ -113,16 +114,16 @@
       ;; TODO
       (let [resp (create-song! file)]
         (if (:errors resp)
-          (bad-request resp)
-          (created (str "/api/songs/" (:id resp)) resp))))
+          (ring-response/bad-request resp)
+          (ring-response/created (str "/api/songs/" (:id resp)) resp))))
 
     (GET "/songs/:id" []
       :return (s/maybe Song)
       :path-params [id :- Long]
       :summary "Retrieve a specific song."
       (if-let [song (db/song-by-id {:id id})]
-        (ok song)
-        (not-found)))
+        (ring-response/ok song)
+        (ring-response/not-found)))
 
     (PUT "/songs/:id" []
       :return Song
@@ -130,15 +131,13 @@
       :body [new-song UpdatedSong]
       :summary "Update song details."
       (if-let [old-song (db/song-by-id {:id id})]
-        (ok (update-song! old-song new-song))
-        (not-found)))
+        (update-song! old-song new-song)
+        (ring-response/not-found)))
 
     (DELETE "/songs/:id" []
       :return nil
       :path-params [id :- Long]
       :summary "Delete a specific song."
       (if-let [song (db/song-by-id {:id id})]
-        (do
-          (delete-song! (db/song-by-id {:id id}))
-          (no-content))
-        (not-found)))))
+        (delete-song! (db/song-by-id {:id id}))
+        (ring-response/not-found)))))
