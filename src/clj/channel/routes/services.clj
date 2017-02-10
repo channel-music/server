@@ -24,9 +24,8 @@
 (defn create-song! [file]
   (if-let [errors (v/validate-create-song {:file file})]
     (ring-response/bad-request errors)
-    (if-let [song (songs/create-song! resource-path file)]
-      (ring-response/created (str "/api/songs/" (:id song)) song)
-      (ring-response/bad-request "Song already exists"))))
+    (let [song (songs/create-song! resource-path file)]
+      (ring-response/created (str "/api/songs/" (:id song)) song))))
 
 (defn update-song! [old-song new-song]
   (let [song (merge old-song new-song)]

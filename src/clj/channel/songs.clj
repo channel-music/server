@@ -44,12 +44,12 @@
   (db/song-by-id {:id id}))
 
 (defn create-song!
-  "Attempt to create a new song using `file`. Returns `nil`
-  if song already exists."
+  "Attempt to create a new song using `file`. Returns the `song`
+  if it already exists."
   [resource-path file]
   (let [song (file->song (:tempfile file))]
-    (if (db/song-exists? song)
-      nil
+    (if-let [existing-song (db/song-exists? song)]
+      existing-song
       (let [file-path (-> (save-file! resource-path file)
                           (.getPath)
                           (.replace (.getPath resource-path) ""))]
