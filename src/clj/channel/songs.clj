@@ -9,13 +9,11 @@
   ;; TODO: support other versions
   (.getId3v2Tag (Mp3File. file)))
 
-(defn- save-file!
-  "Store the uploaded temporary file in the directory given my `path`.
-  Returns the uploaded file."
-  [path {:keys [tempfile filename]}]
-  (let [new-file (io/file path filename)]
-    (io/copy tempfile new-file)
-    new-file))
+(defn- track-ratio
+  "Take a string representing a track (E.g. 3/12) and return
+  a pair of [num denom] (E.g. [3 12])"
+  [track-str]
+  (clojure.string/split track-str #"/"))
 
 (defn file->song
   "Extracts song data from the file. Returns `nil` on read failure."
@@ -25,7 +23,19 @@
      :artist (.getArtist tag)
      :album  (.getAlbum tag)
      :genre  (.getGenre tag)
-     :track  (Integer/parseUnsignedInt (.getTrack tag))}))
+     ;; TODO: Handle invalid int
+     :track  (-> (.getTrack tag)
+                 (track-ratio)
+                 (first)
+                 (Integer/parseUnsignedInt))}))
+
+(defn- save-file!
+  "Store the uploaded temporary file in the directory given my `path`.
+  Returns the uploaded file."
+  [path {:keys [tempfile filename]}]
+  (let [new-file (io/file path filename)]
+    (io/copy tempfile new-file)
+    new-file))
 
 (def all-songs db/all-songs)
 
