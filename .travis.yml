@@ -1,1 +1,9 @@
 language: clojure
+
+# Setup DB service
+services:
+  - postgresql
+before_install:
+  - createdb sound_app_test 
+test:
+  database_url: "postgresql://localhost/sound_app_test"
