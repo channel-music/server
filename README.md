@@ -1,5 +1,7 @@
 # Channel
 
+[![Build Status](https://travis-ci.org/kalouantonis/channel.svg?branch=master)](https://travis-ci.org/kalouantonis/channel)
+
 A self-hosted music streaming application.
 
 **WARNING: This project is heavily WIP**
