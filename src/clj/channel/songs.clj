@@ -9,11 +9,16 @@
   ;; TODO: support other versions
   (.getId3v2Tag (Mp3File. file)))
 
-(defn- track-ratio
-  "Take a string representing a track (E.g. 3/12) and return
+(defn- track-number
+  "Take a string representing a track ratio (E.g. 3/12) and return
   a pair of [num denom] (E.g. [3 12])"
-  [track-str]
-  (clojure.string/split track-str #"/"))
+  [ratio-str]
+  (if ratio-str
+    (-> (clojure.string/split ratio-str #"/")
+        (first)
+        ;; TODO: Handle invalid int
+        (Integer/parseUnsignedInt))
+    0))
 
 (defn file->song
   "Extracts song data from the file. Returns `nil` on read failure."
@@ -23,11 +28,7 @@
      :artist (.getArtist tag)
      :album  (.getAlbum tag)
      :genre  (.getGenre tag)
-     ;; TODO: Handle invalid int
-     :track  (-> (.getTrack tag)
-                 (track-ratio)
-                 (first)
-                 (Integer/parseUnsignedInt))}))
+     :track  (track-number (.getTrack tag))}))
 
 (defn- save-file!
   "Store the uploaded temporary file in the directory given my `path`.
@@ -42,15 +43,20 @@
 (defn song-by-id [id]
   (db/song-by-id {:id id}))
 
-(defn create-song! [resource-path file]
+(defn create-song!
+  "Attempt to create a new song using `file`. If the song already
+  exists, will return it."
+  [resource-path file]
   (let [song (file->song (:tempfile file))]
-    (let [file-path (-> (save-file! resource-path file)
-                        (.getPath)
-                        (.replace (.getPath resource-path) ""))]
-      (->> file-path
-           (assoc song :file)
-           db/create-song<!
-           (merge song)))))
+    (if-let [existing-song (db/song-exists? song)] 
+      existing-song
+      (let [file-path (-> (save-file! resource-path file)
+                          (.getPath)
+                          (.replace (.getPath resource-path) ""))]
+        (->> file-path
+             (assoc song :file)
+             db/create-song<!
+             (merge song))))))
 
 (defn update-song! [old-song new-song]
   (-> (merge old-song new-song)

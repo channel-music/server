@@ -63,14 +63,12 @@ SELECT * FROM songs
 WHERE id = :id
 
 -- :name song-exists? :? :1
--- :doc returns true if the song exists
-SELECT EXISTS (
-  SELECT 1 FROM songs
-  WHERE title = :title AND
-        -- FIXME: find a nicer way of dealing with this
-        (artist = :artist OR artist IS NULL) AND
-        (album  = :album  OR album  IS NULL)
-)
+-- :doc returns song if exists, else returns nil.
+SELECT * FROM songs
+WHERE title = :title AND
+      -- FIXME: find a nicer way of dealing with this
+      (artist = :artist OR artist IS NULL) AND
+      (album  = :album  OR album  IS NULL)
 
 -- :name delete-song! :! :n
 -- :doc delete a song given the id
