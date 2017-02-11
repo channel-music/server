@@ -2,37 +2,47 @@
   (:require [ajax.core :refer [POST]]
             [rum.core :as rum]))
 
-;; FIXME
-(rum/defc upload-component []
-  [:form#upload-form {:enc-type "multipart/form-data"
-                      :method "POST"}
-   [:label "Upload file:"]
-   [:input#upload-file {:type "file"
-                        :name "upload-file"}]])
+(defn- synthetic-event-dom-node
+  "Returns the related DOM node for a react SyntheticEvent."
+  [e]
+  (.-target (.-nativeEvent e)))
 
-;; TODO: reloadable
-(rum/defc progress-bar [min max value]
-  [:div.progress-bar {:role "progressbar"
-                      :aria-valuenow value
-                      :aria-valuemin min
-                      :aria-valuemax max
-                      :style {:width "60%"}}
-   [:span.sr-only (str value "% Complete")]])
+(defn- wrap-dom-node
+  "Wrapper for react event handler. Gets the events' related
+  DOM node."
+  [f]
+  (fn [e]
+    (f e (synthetic-event-dom-node e))))
 
-(defn upload-song! [app-state target]
-  (let [file (aget (.-files target) 0)
-        form-data (doto (js/FormData.)
+(defn wrap-prevent-default
+  "Wrapper for react event handler. Always prevent default
+  on the received event, even if an exception is thrown when
+  calling `f`."
+  [f]
+  (fn [e]
+    (try (f e)
+      (finally
+        (.preventDefault e)))))
+
+(defn upload-song! [songs file]
+  (let [form-data (doto (js/FormData.)
                     (.append "file" file))]
     (POST "/api/songs" {:body form-data
-                        :handler #(swap! app-state update :songs conj %)
+                        :handler #(swap! songs conj %)
                         :error-handler #(println "Failed to upload file:" %)})))
 
-(rum/defc upload-page [app-state]
-  [:div#upload
-   (upload-component)
-   [:button.btn.btn-default.btn-primary
-    {:on-click #(upload-song! app-state
-                 (js/document.getElementById "upload-file"))}
+(rum/defcs upload-page
+  [state db]
+  [:form {:enc-type "multipart/form-data"
+          :method "POST"
+          :on-submit ((comp wrap-prevent-default wrap-dom-node)
+                      (fn [e dom-node]
+                        (let [file-input (.-file dom-node)]
+                          (let [file (aget (.-files file-input) 0)]
+                            (js/console.log "Uploading file:" file)
+                            (upload-song! (rum/cursor db :songs) file)))))}
+   [:div.form-group
+    [:label {:for "file"} "Upload file:"]
+    [:input {:type "file", :id "file", :name "file"}]]
+   [:button.btn.btn-default {:type :submit}
     "Upload"]])
-
-
