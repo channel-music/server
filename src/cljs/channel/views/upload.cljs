@@ -1,6 +1,5 @@
 (ns channel.views.upload
-  (:require [channel.db :refer [app-state]]
-            [ajax.core :refer [POST]]
+  (:require [ajax.core :refer [POST]]
             [rum.core :as rum]))
 
 ;; FIXME
@@ -20,7 +19,7 @@
                       :style {:width "60%"}}
    [:span.sr-only (str value "% Complete")]])
 
-(defn upload-song! [target]
+(defn upload-song! [app-state target]
   (let [file (aget (.-files target) 0)
         form-data (doto (js/FormData.)
                     (.append "file" file))]
@@ -28,12 +27,12 @@
                         :handler #(swap! app-state update :songs conj %)
                         :error-handler #(println "Failed to upload file:" %)})))
 
-(rum/defc upload-page []
+(rum/defc upload-page [app-state]
   [:div#upload
    (upload-component)
    [:button.btn.btn-default.btn-primary
-    {:on-click #(upload-song!
-                 (.getElementById js/document "upload-file"))}
+    {:on-click #(upload-song! app-state
+                 (js/document.getElementById "upload-file"))}
     "Upload"]])
 
 

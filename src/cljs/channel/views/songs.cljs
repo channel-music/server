@@ -29,7 +29,7 @@
                                              (z/down)))
       (play-song! song))))
 
-(rum/defc audio-player-component []
+(rum/defc audio-player []
   (let [queue (:play-queue @app-state)]
     [:div#audio-player
      #_[:div#info
@@ -46,7 +46,7 @@
                                                 (z/node)))}]
       ">>"]]))
 
-(rum/defc songs-component [songs]
+(rum/defc song-list [songs]
   [:table.table.table-striped
    [:thead
     [:tr
@@ -68,7 +68,8 @@
        [:td [:button {:on-click #(delete-song! s)}
              "Delete"]]])]])
 
-(rum/defc songs-page []
+(rum/defc songs-page < rum/reactive
+  [app-state]
   [:div#songs
-   (songs-component (:songs @app-state))
-   (audio-player-component)])
+   (song-list (:songs (rum/react app-state)))
+   (audio-player)])

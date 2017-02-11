@@ -13,14 +13,15 @@
 ;; TODO: a map. Same goes for route definitions below.
 (defmulti current-page
   "Returns the component for the currently used page."
-  #(:page @app-state))
-(defmethod current-page :songs []
-  (songs-page))
-(defmethod current-page :upload []
-  (upload-page))
+  {:default nil}
+  #(:page @%))
+(defmethod current-page :songs [app-state]
+  (songs-page app-state))
+(defmethod current-page :upload [app-state]
+  (upload-page app-state))
 ;; TODO: Make 404 page
-(defmethod current-page :default []
-  (songs-page))
+(defmethod current-page nil [app-state]
+  (songs-page app-state))
 
 (rum/defc main-page [app-state]
   [:#wrapper
@@ -28,7 +29,7 @@
    [:#page-content-wrapper
     [:.row
      [:.col-lg-12]
-     (current-page)]]])
+     (current-page app-state)]]])
 
 (defn- hook-browser-navigation!
   "Hook browser history in to secretary config."
