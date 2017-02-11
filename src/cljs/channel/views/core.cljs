@@ -1,6 +1,5 @@
 (ns channel.views.core
   (:require [channel.components :as c]
-            [channel.db :refer [app-state]]
             [channel.views.songs :refer [songs-page]]
             [channel.views.upload :refer [upload-page]]
             [goog.events :as events]
@@ -14,22 +13,28 @@
 (defmulti current-page
   "Returns the component for the currently used page."
   {:default nil}
-  #(:page @%))
-(defmethod current-page :songs [app-state]
+  (fn [page _] page))
+(defmethod current-page :songs [_ app-state]
   (songs-page app-state))
-(defmethod current-page :upload [app-state]
+(defmethod current-page :upload [_ app-state]
   (upload-page app-state))
 ;; TODO: Make 404 page
-(defmethod current-page nil [app-state]
+(defmethod current-page nil [_ app-state]
   (songs-page app-state))
 
-(rum/defc main-page [app-state]
+(declare songs-path upload-path)
+
+(rum/defc main-page < rum/reactive
+  [app-state]
   [:#wrapper
-   (c/sidebar [["Songs" "#/songs"] ["Upload" "#/upload"]])
+   (c/sidebar [["Songs" (songs-path)]
+               ["Upload" (upload-path)]])
    [:#page-content-wrapper
     [:.row
      [:.col-lg-12]
-     (current-page app-state)]]])
+     (current-page
+      (:page (rum/react app-state))
+      app-state)]]])
 
 (defn- hook-browser-navigation!
   "Hook browser history in to secretary config."
@@ -41,7 +46,7 @@
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
-(defn setup-app-routes! []
+(defn setup-app-routes! [app-state]
   (secretary/set-config! :prefix "#")
 
   ;; TODO: Use names instead of strings

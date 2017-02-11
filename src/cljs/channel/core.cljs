@@ -10,6 +10,6 @@
    (.getElementById js/document "app")))
 
 (defn init! []
-  (views/setup-app-routes!)
+  (views/setup-app-routes! app-state)
   (mount!)
   (GET "/api/songs" {:handler #(swap! app-state assoc :songs %)}))
