@@ -26,7 +26,7 @@
                  [org.webjars/webjars-locator-jboss-vfs "0.1.0"]
                  [org.clojure/clojurescript "1.9.293" :scope "provided"]
                  [cljs-ajax "0.5.8"]
-                 [reagent "0.6.0"]
+                 [rum "0.10.8"]
                  ;; Both
                  [bouncer "1.0.0"]
                  [mount "0.1.11"]

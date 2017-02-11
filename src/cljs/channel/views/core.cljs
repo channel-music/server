@@ -1,12 +1,12 @@
 (ns channel.views.core
   (:require [channel.components :as c]
             [channel.db :refer [app-state]]
-            [channel.views.upload :refer [upload-page]]
             [channel.views.songs :refer [songs-page]]
+            [channel.views.upload :refer [upload-page]]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
-            [secretary.core :as secretary :refer-macros [defroute]]
-            [reagent.core :as r])
+            [rum.core :as rum]
+            [secretary.core :as secretary :refer-macros [defroute]])
   (:import goog.History))
 
 ;; TODO: Find a less DRY way of defining these. Possibly through
@@ -15,23 +15,20 @@
   "Returns the component for the currently used page."
   #(:page @app-state))
 (defmethod current-page :songs []
-  [songs-page])
+  (songs-page))
 (defmethod current-page :upload []
-  [upload-page])
+  (upload-page))
 ;; TODO: Make 404 page
 (defmethod current-page :default []
-  [songs-page])
+  (songs-page))
 
-(defn main-page
-  "Main view page, all other pages are rendered as children of this one."
-  []
-  [:div#wrapper
-   [c/sidebar [["Songs" "#/songs"], ["Upload" "#/upload"]]]
-   [:div#page-content-wrapper
-    [:div.container-fluid
-     #_[c/menu-toggle "Toggle Menu"]
-     [:div.row>div.col-lg-12
-      [current-page]]]]])
+(rum/defc main-page [app-state]
+  [:#wrapper
+   (c/sidebar [["Songs" "#/songs"] ["Upload" "#/upload"]])
+   [:#page-content-wrapper
+    [:.row
+     [:.col-lg-12]
+     (current-page)]]])
 
 (defn- hook-browser-navigation!
   "Hook browser history in to secretary config."

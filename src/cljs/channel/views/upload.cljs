@@ -1,16 +1,18 @@
 (ns channel.views.upload
   (:require [channel.db :refer [app-state]]
-            [ajax.core :refer [POST]]))
+            [ajax.core :refer [POST]]
+            [rum.core :as rum]))
 
 ;; FIXME
-(defn upload-component []
+(rum/defc upload-component []
   [:form#upload-form {:enc-type "multipart/form-data"
                       :method "POST"}
    [:label "Upload file:"]
    [:input#upload-file {:type "file"
                         :name "upload-file"}]])
 
-(defn progress-bar [min max value]
+;; TODO: reloadable
+(rum/defc progress-bar [min max value]
   [:div.progress-bar {:role "progressbar"
                       :aria-valuenow value
                       :aria-valuemin min
@@ -26,9 +28,9 @@
                         :handler #(swap! app-state update :songs conj %)
                         :error-handler #(println "Failed to upload file:" %)})))
 
-(defn upload-page []
+(rum/defc upload-page []
   [:div#upload
-   [upload-component]
+   (upload-component)
    [:button.btn.btn-default.btn-primary
     {:on-click #(upload-song!
                  (.getElementById js/document "upload-file"))}

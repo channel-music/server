@@ -1,15 +1,15 @@
 (ns channel.core
-  (:require [channel.db :refer [app-state]]
+  (:require [ajax.core :refer [GET]]
+            [channel.db :refer [app-state]]
             [channel.views.core :as views]
-            [ajax.core :refer [GET]]
-            [reagent.core :as r]))
+            [rum.core :as rum]))
 
-(defn mount-components []
-  (r/render-component
-   [views/main-page]
+(defn mount! []
+  (rum/mount
+   (views/main-page app-state)
    (.getElementById js/document "app")))
 
 (defn init! []
   (views/setup-app-routes!)
-  (mount-components)
+  (mount!)
   (GET "/api/songs" {:handler #(swap! app-state assoc :songs %)}))

@@ -1,28 +1,28 @@
 (ns channel.components
   "Reusable view components."
-  (:require [reagent.core :as reagent]))
+  (:require [rum.core :as rum]))
 
-(defn sidebar [links]
-  [:div#sidebar-wrapper
+(def ^:private menu-toggle-mixin
+  {:did-mount (fn [state]
+                (set! (.-onclick (rum/dom-node state))
+                      (fn [e]
+                        (.preventDefault e)
+                        (-> (.getElementById js/document "wrapper")
+                            (.-classList)
+                            (.toggle "toggled")))))})
+
+;; TODO: private?
+(rum/defc menu-toggle < menu-toggle-mixin [text]
+  [:a#menu-toggle text])
+
+(rum/defc sidebar < rum/static [links]
+  [:#sidebar-wrapper
    [:ul.sidebar-nav
-    ^{:key (hash "root")} ;; TODO: find more robust method
     [:li.sidebar-brand
+     {:key (hash "root")} ;; TODO: find more robust method
      [:a {:href "#"} "Channel"]]
     (for [[name href] links]
-      ^{:key (hash name)}
-      [:li [:a {:href href} name]])]]) 
-
-(defn- menu-toggle-render [child]
-  [:div.btn.btn-default child])
-
-(defn- menu-toggle-did-mount [this]
-  (set! (.-onclick (reagent/dom-node this))
-        (fn [e]
-          (.preventDefault e)
-          (-> (.getElementById js/document "wrapper")
-              (.-classList)
-              (.toggle "toggled")))))
-
-(defn menu-toggle []
-  (reagent/create-class {:reagent-render menu-toggle-render
-                         :component-did-mount menu-toggle-did-mount}))
+      [:li {:key (hash name)}
+       [:a {:href href} name]])
+    #_[:li {:key "toggle"}
+     (menu-toggle "<<")]]])

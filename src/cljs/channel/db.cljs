@@ -1,4 +1,3 @@
-(ns channel.db
-  (:require [reagent.core :as r]))
+(ns channel.db)
 
-(defonce app-state (r/atom {}))
+(defonce app-state (atom {}))

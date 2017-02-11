@@ -1,7 +1,8 @@
 (ns channel.views.songs
   (:require [ajax.core :refer [DELETE]]
+            [channel.db :refer [app-state]]
             [clojure.zip :as z]
-            [channel.db :refer [app-state]]))
+            [rum.core :as rum]))
 
 (defn delete-song!
   "Request that a song is deleted. Removes from app state on success."
@@ -28,25 +29,24 @@
                                              (z/down)))
       (play-song! song))))
 
-(defn audio-player-component []
+(rum/defc audio-player-component []
   (let [queue (:play-queue @app-state)]
-    (fn []
-      [:div#audio-player
-       #_[:div#info
+    [:div#audio-player
+     #_[:div#info
         [:p (:title (current-song queue))]]
-       [:div#controls
-        [:button#prev {:on-click #(play-song! (-> (z/right queue)
-                                                  (z/node)))}
-         "<<"]
-        [:button#play {:on-click #(play-song! (or (current-song queue)
-                                                  ;; Pick a random song if there isn't one
-                                                  (rand-nth (vec (:songs @app-state)))))}
-         "|>"]
-        [:button#next {:on-click #(play-song! (-> (z/left queue)
-                                                  (z/node)))}]
-        ">>"]])))
+     [:div#controls
+      [:button#prev {:on-click #(play-song! (-> (z/right queue)
+                                                (z/node)))}
+       "<<"]
+      [:button#play {:on-click #(play-song! (or (current-song queue)
+                                                ;; Pick a random song if there isn't one
+                                                (rand-nth (vec (:songs @app-state)))))}
+       "|>"]
+      [:button#next {:on-click #(play-song! (-> (z/left queue)
+                                                (z/node)))}]
+      ">>"]]))
 
-(defn songs-component [songs]
+(rum/defc songs-component [songs]
   [:table.table.table-striped
    [:thead
     [:tr
@@ -57,8 +57,8 @@
      [:th {:col-span 2}]]]
    [:tbody
     (for [s (sort-by (juxt :artist :album :track) songs)]
-      ^{:key (:id s)}
       [:tr
+       {:key (:id s)}
        [:th (:track s)]
        [:td (:title s)]
        [:td (:artist s)]
@@ -68,7 +68,7 @@
        [:td [:button {:on-click #(delete-song! s)}
              "Delete"]]])]])
 
-(defn songs-page []
+(rum/defc songs-page []
   [:div#songs
-   [songs-component (:songs @app-state)]
-   [audio-player-component]])
+   (songs-component (:songs @app-state))
+   (audio-player-component)])
