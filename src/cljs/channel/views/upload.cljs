@@ -2,17 +2,16 @@
   (:require [ajax.core :refer [POST]]
             [rum.core :as rum]))
 
-(defn- synthetic-event-dom-node
-  "Returns the related DOM node for a react SyntheticEvent."
-  [e]
-  (.-target (.-nativeEvent e)))
+(extend-type js/FileList
+  ISeqable
+  (-seq [files] (array-seq files 0)))
 
-(defn- wrap-dom-node
-  "Wrapper for react event handler. Gets the events' related
-  DOM node."
+(defn- wrap-native-event
+  "Wrapper for react event handler. Calls `f` with
+  the native DOM node rather than the react SyntheticEvent."
   [f]
   (fn [e]
-    (f e (synthetic-event-dom-node e))))
+    (f (.-nativeEvent e))))
 
 (defn wrap-prevent-default
   "Wrapper for react event handler. Always prevent default
@@ -31,18 +30,21 @@
                         :handler #(swap! songs conj %)
                         :error-handler #(println "Failed to upload file:" %)})))
 
-(rum/defcs upload-page
+(rum/defcs upload-page < (rum/local [] ::files)
   [state db]
   [:form {:enc-type "multipart/form-data"
           :method "POST"
-          :on-submit ((comp wrap-prevent-default wrap-dom-node)
-                      (fn [e dom-node]
-                        (let [file-input (.-file dom-node)]
-                          (let [file (aget (.-files file-input) 0)]
-                            (js/console.log "Uploading file:" file)
-                            (upload-song! (rum/cursor db :songs) file)))))}
+          :on-submit (wrap-prevent-default
+                      (fn [e]
+                        (doseq [file @(::files state)]
+                          (upload-song! (rum/cursor db :songs) file))))}
+   [:em (pr-str state)]
    [:div.form-group
     [:label {:for "file"} "Upload file:"]
-    [:input {:type "file", :id "file", :name "file"}]]
+    [:input {:type "file", :id "file", :multiple true
+             :on-change (wrap-native-event
+                         (fn [e]
+                           (let [files (vec (-> e .-target .-files))]
+                             (reset! (::files state) files))))}]]
    [:button.btn.btn-default {:type :submit}
     "Upload"]])
