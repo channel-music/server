@@ -31,10 +31,10 @@
                ["Upload" (upload-path)]])
    [:#page-content-wrapper
     [:.row
-     [:.col-lg-12]
-     (current-page
-      (:page (rum/react db))
-      db)]]])
+     [:.col-lg-12
+      (current-page
+       (:page (rum/react db))
+       db)]]]])
 
 (defn- hook-browser-navigation!
   "Hook browser history in to secretary config."
