@@ -1,4 +1,4 @@
-(ns channel.components
+(ns channel.views.components
   "Reusable view components."
   (:require [rum.core :as rum]))
 
@@ -26,3 +26,12 @@
        [:a {:href href} name]])
     #_[:li {:key "toggle"}
      (menu-toggle "<<")]]])
+
+(rum/defc progress [value]
+  [:.progress
+   [:.progress-bar {:role "progressbar"
+                    :aria-valuenow value
+                    :aria-valuemin 0
+                    :aria-valuemax 100
+                    :style {:width "100%"}}]
+   [:span.sr-only (str value "% Complete")]])

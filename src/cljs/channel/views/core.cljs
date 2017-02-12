@@ -1,5 +1,5 @@
 (ns channel.views.core
-  (:require [channel.components :as c]
+  (:require [channel.views.components :as c]
             [channel.views.songs :refer [songs-page]]
             [channel.views.upload :refer [upload-page]]
             [goog.events :as events]

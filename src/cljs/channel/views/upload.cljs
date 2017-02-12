@@ -1,5 +1,6 @@
 (ns channel.views.upload
   (:require [ajax.core :refer [POST]]
+            [channel.views.components :as c]
             [rum.core :as rum]))
 
 (extend-type js/FileList
@@ -20,7 +21,7 @@
   (fn [e]
     (f (.-nativeEvent e))))
 
-(defn wrap-prevent-default
+(defn- wrap-prevent-default
   "Wrapper for react event handler. Always prevent default
   on the received event, even if an exception is thrown when
   calling `f`."
@@ -57,8 +58,8 @@
    [:thead
     [:tr
      [:th "Name"]
-     [:th "Size (Mb)"]
-     #_[:th "Progress"]
+     [:th "Size"]
+     [:th "Progress"]
      [:th]]]
    [:tbody
     (for [file @files]
@@ -66,8 +67,9 @@
        [:td (.-name file)]
        [:td (-> (.-size file)
                 (bytes->megabytes)
-                (.toPrecision 3))]
-       #_[:td "TODO progress"]
+                (.toPrecision 3)
+                (str "MB"))]
+       [:td (c/progress 60)]
        [:td [:button.btn.btn-default
              {:on-click #(swap! files disj file)}
              [:i.fa.fa-trash]]]])]])
@@ -75,5 +77,11 @@
 (rum/defcs upload-page < (rum/local #{} ::files)
   [state db]
   [:#upload
-   (file-list (::files state))
-   (file-form db (::files state))])
+   [:.row
+    [:.col-md-12
+     (file-list (::files state))]]
+   [:row
+    [:col-md-12 (c/progress 50)]]
+   [:.row
+    [:.col-md-12
+     (file-form db (::files state))]]])
