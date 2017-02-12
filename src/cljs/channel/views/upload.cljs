@@ -44,14 +44,18 @@
                       :on-submit (wrap-prevent-default
                                   (fn [_]
                                     (doseq [file @files]
-                                      (upload-song! (rum/cursor db :songs) file))))}
+                                      (upload-song! (rum/cursor db :songs) (:file file)))))}
    [:div.form-group
     [:input {:type "file", :multiple true
              :on-change (wrap-native-event
                          (fn [e]
-                           (swap! files into (set (-> e .-target .-files)))))}]]
+                           (let [target-files (-> e .-target .-files)]
+                             (->> target-files
+                                  (map (fn [f] {:file f, :status :pending}))
+                                  (set)
+                                  (swap! files into)))))}]]
    [:button.btn.btn-default {:type :submit}
-    [:i.fa.fa-upload]]])
+    "Upload "[:i.fa.fa-upload]]])
 
 (rum/defc file-list [files]
   [:table.table
@@ -59,17 +63,18 @@
     [:tr
      [:th "Name"]
      [:th "Size"]
-     [:th "Progress"]
+     [:th "Status"]
      [:th]]]
    [:tbody
-    (for [file @files]
+    (for [{:keys [file status]} @files]
       [:tr {:key (hash file)}
        [:td (.-name file)]
        [:td (-> (.-size file)
                 (bytes->megabytes)
                 (.toPrecision 3)
                 (str "MB"))]
-       [:td (c/progress 60)]
+       ;; TODO
+       [:td [:i.fa.fa-file-audio-o]]
        [:td [:button.btn.btn-default
              {:on-click #(swap! files disj file)}
              [:i.fa.fa-trash]]]])]])
@@ -80,7 +85,8 @@
    [:.row
     [:.col-md-12
      (file-list (::files state))]]
-   [:row
+   ;; TODO
+   #_[:row
     [:col-md-12 (c/progress 50)]]
    [:.row
     [:.col-md-12

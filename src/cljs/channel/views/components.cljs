@@ -33,5 +33,5 @@
                     :aria-valuenow value
                     :aria-valuemin 0
                     :aria-valuemax 100
-                    :style {:width "100%"}}]
+                    :style {:width (str value "%")}}]
    [:span.sr-only (str value "% Complete")]])
