@@ -30,21 +30,30 @@
                         :handler #(swap! songs conj %)
                         :error-handler #(println "Failed to upload file:" %)})))
 
-(rum/defcs upload-page < (rum/local [] ::files)
-  [state db]
+(rum/defc file-form [db files]
   [:form {:enc-type "multipart/form-data"
           :method "POST"
           :on-submit (wrap-prevent-default
-                      (fn [e]
-                        (doseq [file @(::files state)]
+                      (fn [_]
+                        (doseq [file @files]
                           (upload-song! (rum/cursor db :songs) file))))}
-   [:em (pr-str state)]
    [:div.form-group
     [:label {:for "file"} "Upload file:"]
     [:input {:type "file", :id "file", :multiple true
              :on-change (wrap-native-event
                          (fn [e]
-                           (let [files (vec (-> e .-target .-files))]
-                             (reset! (::files state) files))))}]]
+                           (reset! files (vec (-> e .-target .-files)))))}]]
    [:button.btn.btn-default {:type :submit}
     "Upload"]])
+
+(rum/defc file-list [files]
+  [:ul
+   (for [file files]
+     [:li {:key (hash file)}
+      (.-name file)])])
+
+(rum/defcs upload-page < (rum/local [] ::files)
+  [state db]
+  [:#upload
+   (file-form db (::files state))
+   (file-list @(::files state))])

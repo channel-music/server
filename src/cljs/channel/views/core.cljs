@@ -14,18 +14,18 @@
   "Returns the component for the currently used page."
   {:default nil}
   (fn [page _] page))
-(defmethod current-page :songs [_ app-state]
-  (songs-page app-state))
-(defmethod current-page :upload [_ app-state]
-  (upload-page app-state))
+(defmethod current-page :songs [_ db]
+  (songs-page db))
+(defmethod current-page :upload [_ db]
+  (upload-page db))
 ;; TODO: Make 404 page
-(defmethod current-page nil [_ app-state]
-  (songs-page app-state))
+(defmethod current-page nil [_ db]
+  (songs-page db))
 
 (declare songs-path upload-path)
 
 (rum/defc main-page < rum/reactive
-  [app-state]
+  [db]
   [:#wrapper
    (c/sidebar [["Songs" (songs-path)]
                ["Upload" (upload-path)]])
@@ -33,8 +33,8 @@
     [:.row
      [:.col-lg-12]
      (current-page
-      (:page (rum/react app-state))
-      app-state)]]])
+      (:page (rum/react db))
+      db)]]])
 
 (defn- hook-browser-navigation!
   "Hook browser history in to secretary config."
@@ -46,16 +46,16 @@
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
-(defn setup-app-routes! [app-state]
+(defn setup-app-routes! [db]
   (secretary/set-config! :prefix "#")
 
   ;; TODO: Use names instead of strings
   (defroute root-path "/" []
-    (swap! app-state assoc :page :songs))
+    (swap! db assoc :page :songs))
   (defroute songs-path "/songs" []
-    (swap! app-state assoc :page :songs))
+    (swap! db assoc :page :songs))
 
   (defroute upload-path "/upload" []
-    (swap! app-state assoc :page :upload))
+    (swap! db assoc :page :upload))
 
   (hook-browser-navigation!))

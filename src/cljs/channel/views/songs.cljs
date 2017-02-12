@@ -69,7 +69,7 @@
              "Delete"]]])]])
 
 (rum/defc songs-page < rum/reactive
-  [app-state]
+  [db]
   [:div#songs
    (song-list (:songs (rum/react app-state)))
    (audio-player)])
