@@ -45,13 +45,12 @@
                                     (doseq [file @files]
                                       (upload-song! (rum/cursor db :songs) file))))}
    [:div.form-group
-    [:label {:for "file"} "Upload file:"]
-    [:input {:type "file", :id "file", :multiple true
+    [:input {:type "file", :multiple true
              :on-change (wrap-native-event
                          (fn [e]
                            (swap! files into (set (-> e .-target .-files)))))}]]
    [:button.btn.btn-default {:type :submit}
-    "Upload"]])
+    [:i.fa.fa-upload]]])
 
 (rum/defc file-list [files]
   [:table.table
@@ -59,7 +58,7 @@
     [:tr
      [:th "Name"]
      [:th "Size (Mb)"]
-     [:th "Progress"]
+     #_[:th "Progress"]
      [:th]]]
    [:tbody
     (for [file @files]
@@ -68,14 +67,13 @@
        [:td (-> (.-size file)
                 (bytes->megabytes)
                 (.toPrecision 3))]
-       [:td "TODO"]
-       [:td
-        [:button.btn.btn-default
-         {:on-click #(swap! files disj file)}
-         "Remove"]]])]])
+       #_[:td "TODO progress"]
+       [:td [:button.btn.btn-default
+             {:on-click #(swap! files disj file)}
+             [:i.fa.fa-trash]]]])]])
 
 (rum/defcs upload-page < (rum/local #{} ::files)
   [state db]
   [:#upload
-   (file-form db (::files state))
-   (file-list (::files state))])
+   (file-list (::files state))
+   (file-form db (::files state))])

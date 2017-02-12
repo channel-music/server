@@ -37,14 +37,14 @@
      [:div#controls
       [:button#prev {:on-click #(play-song! (-> (z/right queue)
                                                 (z/node)))}
-       "<<"]
+       [:i.fa.fa-backward]]
       [:button#play {:on-click #(play-song! (or (current-song queue)
                                                 ;; Pick a random song if there isn't one
                                                 (rand-nth (vec (:songs @app-state)))))}
-       "|>"]
+       [:i.fa.fa-play]]
       [:button#next {:on-click #(play-song! (-> (z/left queue)
-                                                (z/node)))}]
-      ">>"]]))
+                                                (z/node)))}
+       [:i.fa.fa-forward]]]]))
 
 (rum/defc song-list [songs]
   [:table.table.table-striped
@@ -64,9 +64,9 @@
        [:td (:artist s)]
        [:td (:album s)]
        [:td [:button {:on-click #(play-song! s)}
-             "Play"]]
+             [:i.fa.fa-play]]]
        [:td [:button {:on-click #(delete-song! s)}
-             "Delete"]]])]])
+             [:i.fa.fa-trash]]]])]])
 
 (rum/defc songs-page < rum/reactive
   [db]
