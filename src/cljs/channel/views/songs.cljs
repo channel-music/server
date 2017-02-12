@@ -1,50 +1,23 @@
 (ns channel.views.songs
   (:require [ajax.core :refer [DELETE]]
-            [channel.db :refer [app-state]]
-            [clojure.zip :as z]
+            [channel.events :as events]
             [rum.core :as rum]))
 
-(defn delete-song!
-  "Request that a song is deleted. Removes from app state on success."
-  [song]
-  (DELETE (str "/api/songs/" (:id song))
-          {:handler #(swap! app-state update :songs disj song)}))
-
-(defn current-song [queue]
-  (and queue (z/node queue)))
-
-(defn play-song!
-  "Play the given song."
-  [{:keys [file] :as song}]
-  (if-let [queue (:play-queue @app-state)]
-    (->> file
-         (str "/uploads/")
-         (js/Audio.)
-         (.play))
-    ;; Create fresh play queue
-    (let [{:keys [songs]} @app-state]
-      ;; FIXME: Handle case where play-queue is still nil
-      (swap! app-state assoc :play-queue (-> songs
-                                             (z/vector-zip)
-                                             (z/down)))
-      (play-song! song))))
-
 (rum/defc audio-player []
-  (let [queue (:play-queue @app-state)]
-    [:div#audio-player
-     #_[:div#info
-        [:p (:title (current-song queue))]]
-     [:div#controls
-      [:button#prev {:on-click #(play-song! (-> (z/right queue)
-                                                (z/node)))}
-       [:i.fa.fa-backward]]
-      [:button#play {:on-click #(play-song! (or (current-song queue)
-                                                ;; Pick a random song if there isn't one
-                                                (rand-nth (vec (:songs @app-state)))))}
-       [:i.fa.fa-play]]
-      [:button#next {:on-click #(play-song! (-> (z/left queue)
-                                                (z/node)))}
-       [:i.fa.fa-forward]]]]))
+  [:.row
+   [:.col-md-3
+    [:.btn-group {:role "group"}
+     [:button.btn.btn-default {:on-click
+                               (fn [_] (events/dispatch! [:songs/prev]))}
+      [:i.fa.fa-backward]]
+     [:button.btn.btn-default {:on-click
+                               (fn[_] (events/dispatch! [:songs/play]))}
+      [:i.fa.fa-play]]
+     [:butto.btn.btn-default {:on-click
+                              #(events/dispatch! [:songs/next])}
+      [:i.fa.fa-forward]]]]
+   [:.col-md-9
+    [:p "Song title"]]])
 
 (rum/defc song-list [songs]
   [:table.table.table-striped
@@ -63,13 +36,17 @@
        [:td (:title s)]
        [:td (:artist s)]
        [:td (:album s)]
-       [:td [:button {:on-click #(play-song! s)}
-             [:i.fa.fa-play]]]
-       [:td [:button {:on-click #(delete-song! s)}
-             [:i.fa.fa-trash]]]])]])
+       [:td [:button {:on-click
+                      #(events/dispatch! [:songs/play s])}
+             [:i.fa.fa-play]]]])]])
 
 (rum/defc songs-page < rum/reactive
   [db]
   [:div#songs
-   (song-list (:songs (rum/react app-state)))
-   (audio-player)])
+   [:em (pr-str  (:play-queue (rum/react db)))]
+   [:.row
+    [:.col-md-12
+     (song-list (:songs (rum/react db)))]]
+   [:.row
+    [:.col-md-12
+     (audio-player)]]])

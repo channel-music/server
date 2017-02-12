@@ -102,8 +102,6 @@
                       :optimizations :none
                       :pretty-print true}}}}
 
-
-
                   :doo {:build "test"}
                   :source-paths ["env/dev/clj" "test/clj"]
                   :resource-paths ["env/dev/resources"]
@@ -119,8 +117,6 @@
                      {:output-to "target/test.js"
                       :main "channel.doo-runner"
                       :optimizations :whitespace
-                      :pretty-print true}}}}
-
-                  }
+                      :pretty-print true}}}}}
    :profiles/dev {}
    :profiles/test {}})
