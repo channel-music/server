@@ -1,6 +1,6 @@
 (ns channel.views.songs
-  (:require [ajax.core :refer [DELETE]]
-            [channel.events :as events]
+  (:require [channel.events :as events]
+            [channel.play-queue]
             [rum.core :as rum]))
 
 (rum/defc audio-player []
@@ -43,7 +43,7 @@
 (rum/defc songs-page < rum/reactive
   [db]
   [:div#songs
-   [:em (pr-str  (:play-queue (rum/react db)))]
+   [:em (pr-str (:play-queue (rum/react db)))]
    [:.row
     [:.col-md-12
      (song-list (:songs (rum/react db)))]]
