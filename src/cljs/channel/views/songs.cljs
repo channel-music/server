@@ -8,10 +8,10 @@
    [:.col-md-3
     [:.btn-group {:role "group"}
      [:button.btn.btn-default {:on-click
-                               (fn [_] (events/dispatch! [:songs/prev]))}
+                               #(events/dispatch! [:songs/prev])}
       [:i.fa.fa-backward]]
      [:button.btn.btn-default {:on-click
-                               (fn[_] (events/dispatch! [:songs/play]))}
+                               #(events/dispatch! [:songs/play])}
       [:i.fa.fa-play]]
      [:butto.btn.btn-default {:on-click
                               #(events/dispatch! [:songs/next])}

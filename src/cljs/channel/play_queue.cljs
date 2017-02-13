@@ -6,14 +6,16 @@
   "Creates a new play queue using `songs`."
   [songs]
   (-> (mapv :id songs)
-      (z/vector-zip)))
+      (z/vector-zip)
+      ;; Initialize zipper, we only have one level of nesting anyway.
+      (z/down)))
 
 (def next-track
   "Returns the play queue shifted one item to the right."
-  z/next)
+  z/right)
 (def previous-track
   "Returns the play queue shifted one item to the left."
-  z/prev)
+  z/left)
 (def track-id
   "Returns the ID of the song in the current play queue."
   z/node)
@@ -22,20 +24,19 @@
 ;; Handlers
 ;;
 (defmethod handle-event :songs/play
-  [_ db song]
+  [db [_ song]]
   (println "Playing song" song)
   (assoc db :play-queue (make-play-queue (:songs db))))
 
-;; Pauses current playing song
 (defmethod handle-event :songs/pause
-  [_ db]
+  [db _]
   (println "Pausing song" (track-id (:play-queue db)))
   db)
 
 (defmethod handle-event :songs/next
-  [_ db]
+  [db _]
   (update db :play-queue next-track))
 
 (defmethod handle-event :songs/prev
-  [_ db]
+  [db _]
   (update db :play-queue previous-track))
