@@ -41,23 +41,46 @@
   "Returns the ID of the song in the current play queue."
   z/node)
 
+
+;;
+;; Interface to js/Audio
+;; TODO: Rename this module
+;;
+(def currently-playing (atom nil))
+
+(defn pause-song! []
+  (when @currently-playing
+    (.pause @currently-playing)))
+
+(defn play-song! [song]
+  (pause-song!)
+  (let [audio (js/Audio. (str "/uploads/" (:file song)))]
+    (.play audio)
+    (reset! currently-playing audio)))
+
 ;;
 ;; Handlers
 ;;
 (defmethod handle-event :songs/play
-  [db [_ song]]
-  (println "Playing song" song)
-  (assoc db :play-queue (make-play-queue (:songs db))))
+  [{:keys [songs] :as db} [_ song]]
+  (let [pq (make-play-queue songs)]
+    (play-song! (get songs (track-id pq)))
+    (assoc db :play-queue pq)))
 
 (defmethod handle-event :songs/pause
   [db _]
-  (println "Pausing song" (track-id (:play-queue db)))
+  ;; (println "Pausing song" (track-id (:play-queue db)))
+  (pause-song!)
   db)
 
 (defmethod handle-event :songs/next
-  [db _]
-  (update db :play-queue next-track))
+  [{:keys [songs play-queue] :as db} _]
+  (let [pq (next-track play-queue)]
+    (play-song! (get songs (track-id pq)))
+    (assoc db :play-queue pq)))
 
 (defmethod handle-event :songs/prev
-  [db _]
-  (update db :play-queue previous-track))
+  [{:keys [songs play-queue] :as db} _]
+  (let [pq (previous-track play-queue)]
+    (play-song! (get songs (track-id pq)))
+    (assoc db :play-queue pq)))
