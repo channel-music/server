@@ -10,13 +10,13 @@
      [:button.btn.btn-default {:on-click
                                #(events/dispatch! [:songs/prev])}
       [:i.fa.fa-backward]]
-     (if (= (:status player) :paused)
-       [:button.btn.btn-default {:on-click
-                                 #(events/dispatch! [:songs/play])}
-        [:i.fa.fa-play]]
+     (if (= (:status player) :playing)
        [:button.btn.btn-default {:on-click
                                  #(events/dispatch! [:songs/pause])}
-        [:i.fa.fa-pause]])
+        [:i.fa.fa-pause]]
+       [:button.btn.btn-default {:on-click
+                                 #(events/dispatch! [:songs/play])}
+        [:i.fa.fa-play]])
      [:butto.btn.btn-default {:on-click
                               #(events/dispatch! [:songs/next])}
       [:i.fa.fa-forward]]]]

@@ -41,40 +41,27 @@
   "Returns the ID of the song in the current play queue."
   z/node)
 
-
-;;
-;; Interface to js/Audio
-;; TODO: Rename this module
-;;
-(def currently-playing (atom nil))
-
-(defn pause-song! []
-  (when @currently-playing
-    (.pause @currently-playing)))
-
-(defn play-song! [song]
-  (pause-song!)
-  (let [audio (js/Audio. (str "/uploads/" (:file song)))]
-    (.play audio)
-    (reset! currently-playing audio)))
-
 ;;
 ;; Handlers
 ;;
 (defmethod handle-event :songs/play
-  [{:keys [songs] :as db} [_ song]]
-  (let [pq (make-play-queue songs)]
-    (assoc db :player {:queue pq, :status :playing})))
+  [{:keys [songs player] :as db} _]
+  (if (:queue player)
+    (assoc-in db [:player :status] :playing)
+    (assoc db :player {:queue (make-play-queue songs)
+                       :status :playing})))
 
 (defmethod handle-event :songs/pause
   [db _]
-  ;; (println "Pausing song" (track-id (:play-queue db)))
-  (pause-song!)
   (assoc-in db [:player :status] :paused))
 
 (defmethod handle-event :songs/next
-  [{:keys [songs play-queue] :as db} _]
-  (update-in db [:player :queue] next-track))
+  [{:keys [songs player] :as db} _]
+  (if-let [pq (next-track (:queue player))]
+    (assoc-in db [:player :queue] pq)
+    ;; ensure that status is updated when the queue
+    ;; is depleted.
+    (assoc db :player {:queue nil, :status nil})))
 
 (defmethod handle-event :songs/prev
   [{:keys [songs play-queue] :as db} _]
