@@ -3,16 +3,20 @@
             [channel.play-queue]
             [rum.core :as rum]))
 
-(rum/defc audio-player []
+(rum/defc audio-player [player]
   [:.row
    [:.col-md-3
     [:.btn-group {:role "group"}
      [:button.btn.btn-default {:on-click
                                #(events/dispatch! [:songs/prev])}
       [:i.fa.fa-backward]]
-     [:button.btn.btn-default {:on-click
-                               #(events/dispatch! [:songs/play])}
-      [:i.fa.fa-play]]
+     (if (= (:status player) :paused)
+       [:button.btn.btn-default {:on-click
+                                 #(events/dispatch! [:songs/play])}
+        [:i.fa.fa-play]]
+       [:button.btn.btn-default {:on-click
+                                 #(events/dispatch! [:songs/pause])}
+        [:i.fa.fa-pause]])
      [:butto.btn.btn-default {:on-click
                               #(events/dispatch! [:songs/next])}
       [:i.fa.fa-forward]]]]
@@ -46,7 +50,7 @@
    [:.row
     [:.col-md-12
      (song-list (:songs (rum/react db)))]]
-   [:em (pr-str (:play-queue (rum/react db)))]
+   [:em (pr-str (:player (rum/react db)))]
    [:.row
     [:.col-md-12
-     (audio-player)]]])
+     (audio-player (:player (rum/react db)))]]])

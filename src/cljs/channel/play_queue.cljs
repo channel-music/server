@@ -64,23 +64,18 @@
 (defmethod handle-event :songs/play
   [{:keys [songs] :as db} [_ song]]
   (let [pq (make-play-queue songs)]
-    (play-song! (get songs (track-id pq)))
-    (assoc db :play-queue pq)))
+    (assoc db :player {:queue pq, :status :playing})))
 
 (defmethod handle-event :songs/pause
   [db _]
   ;; (println "Pausing song" (track-id (:play-queue db)))
   (pause-song!)
-  db)
+  (assoc-in db [:player :status] :paused))
 
 (defmethod handle-event :songs/next
   [{:keys [songs play-queue] :as db} _]
-  (let [pq (next-track play-queue)]
-    (play-song! (get songs (track-id pq)))
-    (assoc db :play-queue pq)))
+  (update-in db [:player :queue] next-track))
 
 (defmethod handle-event :songs/prev
   [{:keys [songs play-queue] :as db} _]
-  (let [pq (previous-track play-queue)]
-    (play-song! (get songs (track-id pq)))
-    (assoc db :play-queue pq)))
+  (update-in db [:player :queue] previous-track))
