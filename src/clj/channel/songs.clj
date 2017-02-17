@@ -50,9 +50,11 @@
   (let [song (file->song (:tempfile file))]
     (if-let [existing-song (db/song-exists? song)]
       existing-song
+      ;; FIXME: Not serving a file path, I'm serving a URI
       (let [file-path (-> (save-file! resource-path file)
                           (.getPath)
-                          (.replace (.getPath resource-path) ""))]
+                          ;; FIXME: This makes assuptions about `resource-path`
+                          (.replace (.getPath resource-path) "/uploads"))]
         (->> file-path
              (assoc song :file)
              db/create-song<!

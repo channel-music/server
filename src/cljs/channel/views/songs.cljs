@@ -3,6 +3,10 @@
             [channel.play-queue]
             [rum.core :as rum]))
 
+;; TODO: Make a mixin for updating player song progress
+;;       *hint* use requestAnimationFrame or something
+;; TODO: Define a player progress component
+
 (rum/defc audio-player [player]
   [:.row
    [:.col-md-3

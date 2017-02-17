@@ -51,6 +51,10 @@
     (assoc db :player {:queue (make-play-queue songs)
                        :status :playing})))
 
+(comment
+  (.on audio "ended" #(dispatch! [:songs/next]))
+  )
+
 (defmethod handle-event :songs/pause
   [db _]
   (assoc-in db [:player :status] :paused))
