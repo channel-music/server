@@ -1,6 +1,7 @@
 (ns channel.play-queue
   (:require [clojure.zip :as z]
-            [channel.events :refer [handle-event]]))
+            [channel.audio :as audio]
+            [channel.events :refer [handle-event dispatch!]]))
 
 (defn make-play-queue
   "Creates a new play queue using `songs`."
@@ -47,15 +48,13 @@
 (defmethod handle-event :songs/play
   [{:keys [songs player] :as db} [_ song]]
   (when song
-    (js/Audio. (str "/uploads" (:file song))))
+    (-> song
+        (audio/make-audio {:on-ended #(dispatch! [:songs/next])})
+        audio/play!))
   (if (:queue player)
     (assoc-in db [:player :status] :playing)
     (assoc db :player {:queue (make-play-queue songs)
                        :status :playing})))
-
-(comment
-  (.on audio "ended" #(dispatch! [:songs/next]))
-  )
 
 (defmethod handle-event :songs/pause
   [db _]
@@ -63,10 +62,10 @@
 
 (defmethod handle-event :songs/next
   [{:keys [songs player] :as db} _]
+  (println "Handling event :songs/next") ;; TODO: setup logging
   (if-let [pq (next-track (:queue player))]
     (assoc-in db [:player :queue] pq)
-    ;; ensure that status is updated when the queue
-    ;; is depleted.
+    ;; ensure that status is updated when the queue is depleted.
     (assoc db :player {:queue nil, :status nil})))
 
 (defmethod handle-event :songs/prev
