@@ -10,4 +10,4 @@
 (defn dispatch!
   ([params] (dispatch! app-state params))
   ([state params]
-   (swap! state #(handle-event % params))))
+   (swap! state handle-event params)))
