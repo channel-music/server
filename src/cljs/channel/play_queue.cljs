@@ -45,7 +45,9 @@
 ;; Handlers
 ;;
 (defmethod handle-event :songs/play
-  [{:keys [songs player] :as db} _]
+  [{:keys [songs player] :as db} [_ song]]
+  (when song
+    (js/Audio. (str "/uploads" (:file song))))
   (if (:queue player)
     (assoc-in db [:player :status] :playing)
     (assoc db :player {:queue (make-play-queue songs)

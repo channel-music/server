@@ -13,4 +13,4 @@ profiles.clj
 /*.log
 
 # Ignore uploaded files
-/resources/uploads
+/uploads

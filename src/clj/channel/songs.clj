@@ -1,7 +1,19 @@
 (ns channel.songs
-  (:require [channel.db.core :as db]
-            [clojure.java.io :as io])
-  (:import (com.mpatric.mp3agic Mp3File)))
+  (:require [channel.config :refer [env]]
+            [channel.db.core :as db]
+            [clojure.java.io :as io]
+            [clojure.string :as str]
+            [mount.core :refer [defstate]])
+  (:import com.mpatric.mp3agic.Mp3File))
+
+;; Notes:
+;; - Consider that the songs module could be a stateful component
+;;   in itself.
+;; - Perhaps find a better way to store uploads-path. In some way, the handlers
+;;   should be responsible for setting the upload-dir. In another way, it reduces
+;;   the number of arguments to pass to the create-song! and delete-song! functions.
+;;   One must also consider that the uploads-path is a mostly static property once
+;;   defined (as in it doesn't change at runtime).
 
 (defn- parse-id3
   "Takes a file and attempts to parse MP3 ID3 data from it."
@@ -18,7 +30,31 @@
         (first)
         ;; TODO: Handle invalid int
         (Integer/parseUnsignedInt))
-    0))
+    0)) ;; FIXME: nil should be allowed for tracks
+
+;; Can't define it as a normal variable because it depends
+;; on env, which is a component.
+(defstate uploads-path :start (env :uploads-path))
+
+(defn- song->filename
+  [{:keys [title album artist]}]
+  (let [str->filename #(-> % str/lower-case (str/replace #"\s+" "-"))]
+    (->> [artist album title]
+         (map str->filename)
+         #_(apply io/file) ;; TODO
+         (interpose "-")
+         (reduce str))))
+
+(defn- save-file!
+  [song tempfile]
+  (let [filename (str (song->filename song) ".mp3")
+        new-file (io/file uploads-path filename)]
+    (io/copy tempfile new-file)
+    ;; We can assume mp3 for now, validatios catch this
+    ;;
+    ;; FIXME: Find a proper way to generate relative URL's instead of using
+    ;; the java File Object
+    (.toString (io/file "/uploads" filename))))
 
 (defn file->song
   "Extracts song data from the file. Returns `nil` on read failure."
@@ -30,14 +66,6 @@
      :genre  (.getGenre tag)
      :track  (track-number (.getTrack tag))}))
 
-(defn- save-file!
-  "Store the uploaded temporary file in the directory given my `path`.
-  Returns the uploaded file."
-  [path {:keys [tempfile filename]}]
-  (let [new-file (io/file path filename)]
-    (io/copy tempfile new-file)
-    new-file))
-
 (def all-songs db/all-songs)
 
 (defn song-by-id [id]
@@ -46,24 +74,19 @@
 (defn create-song!
   "Attempt to create a new song using `file`. Returns the `song`
   if it already exists."
-  [resource-path file]
-  (let [song (file->song (:tempfile file))]
+  [{:keys [tempfile]}]
+  (let [song (file->song tempfile)]
     (if-let [existing-song (db/song-exists? song)]
       existing-song
-      ;; FIXME: Not serving a file path, I'm serving a URI
-      (let [file-path (-> (save-file! resource-path file)
-                          (.getPath)
-                          ;; FIXME: This makes assuptions about `resource-path`
-                          (.replace (.getPath resource-path) "/uploads"))]
-        (->> file-path
-             (assoc song :file)
-             db/create-song<!
-             (merge song))))))
+      (->> (save-file! song tempfile)
+           (assoc song :file)
+           (db/create-song<!)
+           (merge song)))))
 
 (defn update-song! [old-song new-song]
   (-> (merge old-song new-song)
       (db/update-song!)))
 
-(defn delete-song! [resource-path song]
-  (io/delete-file (io/file resource-path (:file song)))
+(defn delete-song! [song]
+  (io/delete-file (io/file uploads-path (:file song)))
   (db/delete-song! song))

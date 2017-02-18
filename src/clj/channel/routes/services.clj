@@ -18,13 +18,10 @@
 ;; Data required to update a song
 (s/defschema UpdatedSong (dissoc Song :id :file))
 
-;; TODO: Make configurable
-(def resource-path (io/resource "uploads"))
-
 (defn create-song! [file]
   (if-let [errors (v/validate-create-song {:file file})]
     (ring-response/bad-request errors)
-    (let [song (songs/create-song! resource-path file)]
+    (let [song (songs/create-song! file)]
       (ring-response/created (str "/api/songs/" (:id song)) song))))
 
 (defn update-song! [old-song new-song]
@@ -35,7 +32,7 @@
           (ring-response/ok)))))
 
 (defn delete-song! [song]
-  (songs/delete-song! resource-path song)
+  (songs/delete-song! song)
   (ring-response/no-content))
 
 (defapi service-routes
