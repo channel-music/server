@@ -53,7 +53,7 @@
   [:div#songs
    [:.row
     [:.col-md-12
-     (song-list (:songs (rum/react db)))]]
+     (song-list (vals (:songs (rum/react db))))]]
    [:em (pr-str (:player (rum/react db)))]
    [:.row
     [:.col-md-12

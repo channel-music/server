@@ -1,11 +1,14 @@
 (ns channel.audio
-  "Clojure interface to HTML5 Audio")
+  "Clojure interface to HTML5 Audio"
+  #_(:require [cljs.core.async :as async :include-macros true]))
 
 ;; TODO: Figure out how to "synchronize" browser audio state
 ;; TODO: and play-queue state OR try and figure out how to provide
 ;; TODO: a functional-like interface on top of stateful objects.
+;;
+;; Perhaps this can also be considered a component
 
-;; TODO: Use core.async
+;; TODO: Use core.async with timeout
 (defn- watch-on-ended [audio f]
   ((fn this [_]
      (if (.-ended audio)
@@ -23,11 +26,17 @@
        (watch-on-ended audio on-ended))
      audio)))
 
-(defn play! [audio]
-  (.play audio))
+(def ^:private current-audio (atom nil))
 
-(defn pause! [audio]
-  (.pause audio))
+(defn pause! []
+  (when-let [audio @current-audio]
+    (.pause audio)))
 
-(defn muted? [audio]
-  (.muted audio))
+(defn play!
+  ([] (play! @current-audio))
+  ([audio]
+   (reset! current-audio audio)
+   (.play audio)))
+
+(defn muted? []
+  (.muted @current-audio))

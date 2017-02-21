@@ -6,7 +6,7 @@
 (defn make-play-queue
   "Creates a new play queue using `songs`."
   [songs]
-  (-> (mapv :id songs)
+  (-> (mapv (comp :id second) songs)
       (z/vector-zip)
       ;; Initialize zipper, we only have one level of nesting anyway.
       (z/down)))
@@ -47,27 +47,40 @@
 ;;
 (defmethod handle-event :songs/play
   [{:keys [songs player] :as db} [_ song]]
-  (when song
-    (-> song
-        (audio/make-audio {:on-ended #(dispatch! [:songs/next])})
-        audio/play!))
   (if (:queue player)
-    (assoc-in db [:player :status] :playing)
-    (assoc db :player {:queue (make-play-queue songs)
-                       :status :playing})))
+    (do
+      (audio/play!)
+      (assoc-in db [:player :status] :playing))
+    (do
+      (when song
+        (-> song
+            (audio/make-audio {:on-ended #(dispatch! [:songs/next])})
+            audio/play!))
+      (assoc db :player {:queue (make-play-queue songs)
+                         :status :playing}))))
 
 (defmethod handle-event :songs/pause
   [db _]
+  (audio/pause!)
   (assoc-in db [:player :status] :paused))
 
 (defmethod handle-event :songs/next
   [{:keys [songs player] :as db} _]
   (println "Handling event :songs/next") ;; TODO: setup logging
   (if-let [pq (next-track (:queue player))]
-    (assoc-in db [:player :queue] pq)
+    (do
+      (audio/pause!)
+      (audio/play! (-> (get songs (track-id pq))
+                       (audio/make-audio)))
+      (assoc-in db [:player :queue] pq))
     ;; ensure that status is updated when the queue is depleted.
     (assoc db :player {:queue nil, :status nil})))
 
 (defmethod handle-event :songs/prev
-  [{:keys [songs play-queue] :as db} _]
-  (update-in db [:player :queue] previous-track))
+  [{:keys [songs player] :as db} [ev-name]]
+  (println "Handling event" ev-name)
+  (let [pq (previous-track (:queue player))]
+    (audio/pause!)
+    (audio/play! (-> (get songs (track-id pq))
+                     (audio/make-audio)))
+    (assoc-in db [:player :queue] pq)))
