@@ -36,14 +36,13 @@
 ;; on env, which is a component.
 (defstate uploads-path :start (env :uploads-path))
 
+;; FIXME: should return a nested filepath :artist/:album/:title
 (defn- song->filename
   [{:keys [title album artist]}]
   (let [str->filename #(-> % str/lower-case (str/replace #"\s+" "-"))]
     (->> [artist album title]
          (map str->filename)
-         #_(apply io/file) ;; TODO
-         (interpose "-")
-         (reduce str))))
+         (str/join "-"))))
 
 (defn- save-file!
   [song tempfile]
@@ -78,10 +77,10 @@
   (let [song (file->song tempfile)]
     (if-let [existing-song (db/song-exists? song)]
       existing-song
-      (->> (save-file! song tempfile)
-           (assoc song :file)
-           (db/create-song<!)
-           (merge song)))))
+      ;; Ovewrite song giving the file path
+      (let [song (->> (save-file! song tempfile)
+                      (assoc song :file))]
+        (merge song (db/create-song<! song))))))
 
 (defn update-song! [old-song new-song]
   (-> (merge old-song new-song)
