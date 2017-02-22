@@ -1,6 +1,7 @@
 (ns channel.audio
   "Clojure interface to HTML5 Audio"
-  #_(:require [cljs.core.async :as async :include-macros true]))
+  (:require [cljs.core.async :refer [<!] :as async])
+  (:require-macros [cljs.core.async.macros :refer [go-loop]]))
 
 ;; TODO: Figure out how to "synchronize" browser audio state
 ;; TODO: and play-queue state OR try and figure out how to provide
@@ -8,13 +9,18 @@
 ;;
 ;; Perhaps this can also be considered a component
 
-;; TODO: Use core.async with timeout
-(defn- watch-on-ended [audio f]
-  ((fn this [_]
+(defn- watch-on-ended
+  "Calls the function `f` with `audio` once `audio` has ended. Takes a `pause-ms`
+  value that represents the amount of time (in ms) to wait before checking the ended
+  status again (defaults to 500ms)."
+  ([audio f] (watch-on-ended audio f 500))
+  ([audio f pause-ms]
+   (go-loop []
      (if (.-ended audio)
        (f audio)
-       ;; FIXME: Not the right time to do it
-       (js/requestAnimationFrame this)))))
+       (do
+         (<! (async/timeout pause-ms))
+         (recur))))))
 
 (defn make-audio
   "Create a new `js/Audio` object using song data."
