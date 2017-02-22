@@ -16,7 +16,7 @@
       [nil nil nil 4])))
 
 (deftest maybe-test
-  (let [f (maybe identity)]
+  (let [f (maybe (fn [& args] args))]
     (testing "calls function if no params are nil"
       (is (= (f 1 2 3) [1 2 3])))
     (testing "does't call function if any param is nil"
@@ -28,4 +28,4 @@
         f (maybe (fn [& _] (reset! called true)))]
     (testing "calls function if there are no parameters"
       (is (= (f) nil))
-      (is @called))))
+      (is (true? @called)))))

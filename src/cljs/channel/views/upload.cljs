@@ -35,7 +35,8 @@
   (let [form-data (doto (js/FormData.)
                     (.append "file" file))]
     (POST "/api/songs" {:body form-data
-                        :handler #(swap! songs conj %)
+                        :handler (fn [{:keys [id] :as s}]
+                                    (swap! songs assoc id s))
                         :error-handler #(println "Failed to upload file:" %)})))
 
 (rum/defc file-form [db files]

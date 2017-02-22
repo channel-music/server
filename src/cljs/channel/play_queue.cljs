@@ -1,7 +1,8 @@
 (ns channel.play-queue
   (:require [clojure.zip :as z]
             [channel.audio :as audio]
-            [channel.events :refer [handle-event dispatch!]]))
+            [channel.events :refer [handle-event dispatch!]]
+            [channel.utils :refer [maybe]]))
 
 (defn make-play-queue
   "Creates a new play queue using `songs`."
@@ -40,7 +41,7 @@
 
 (def track-id
   "Returns the ID of the song in the current play queue."
-  z/node)
+  (maybe z/node))
 
 ;;
 ;; Handlers
@@ -66,21 +67,19 @@
 
 (defmethod handle-event :songs/next
   [{:keys [songs player] :as db} _]
-  (println "Handling event :songs/next") ;; TODO: setup logging
   (if-let [pq (next-track (:queue player))]
     (do
       (audio/pause!)
       (audio/play! (-> (get songs (track-id pq))
-                       (audio/make-audio)))
+                       (audio/make-audio {:on-ended #(dispatch! [:songs/next])})))
       (assoc-in db [:player :queue] pq))
     ;; ensure that status is updated when the queue is depleted.
     (assoc db :player {:queue nil, :status nil})))
 
 (defmethod handle-event :songs/prev
   [{:keys [songs player] :as db} [ev-name]]
-  (println "Handling event" ev-name)
   (let [pq (previous-track (:queue player))]
     (audio/pause!)
     (audio/play! (-> (get songs (track-id pq))
-                     (audio/make-audio)))
+                     (audio/make-audio {:on-ended #(dispatch! [:songs/next])})))
     (assoc-in db [:player :queue] pq)))
