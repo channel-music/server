@@ -26,5 +26,4 @@
         [nil nil nil 4])))
   (let [f (maybe (fn [& _] :called))]
     (testing "calls function if there are no parameters"
-      (is (= (f) :called))
-      (is (true? @called)))))
+      (is (= (f) :called)))))
