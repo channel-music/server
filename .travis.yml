@@ -1,9 +1,13 @@
+dist: trusty
+sudo: required
 language: clojure
 
 # Setup DB service
+addons:
+  postgresql: "9.6"
 services:
-  - postgresql:9.6
-before_install:
+  - postgresql
+before_script:
   - createdb sound_app_test 
-test:
-  database_url: "postgresql://localhost/sound_app_test"
+env:
+  - DATABASE_URL="postgresql://localhost/sound_app_test?user=postgres"
