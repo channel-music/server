@@ -1,11 +1,13 @@
 (ns channel.play-queue
   (:require [clojure.zip :as z]
-            [channel.events :refer [handle-event]]))
+            [channel.audio :as audio]
+            [channel.events :refer [handle-event dispatch!]]
+            [channel.utils :refer [maybe]]))
 
 (defn make-play-queue
   "Creates a new play queue using `songs`."
   [songs]
-  (-> (mapv :id songs)
+  (-> (mapv (comp :id second) songs)
       (z/vector-zip)
       ;; Initialize zipper, we only have one level of nesting anyway.
       (z/down)))
@@ -39,36 +41,52 @@
 
 (def track-id
   "Returns the ID of the song in the current play queue."
-  z/node)
+  (maybe z/node))
 
 ;;
 ;; Handlers
 ;;
+(defn- song->audio
+  "Create an audio object using the given `song`, setting up
+  all callbacks."
+  [song]
+  (audio/make-audio song {:on-ended #(dispatch [:songs/next])}))
+
 (defmethod handle-event :songs/play
   [{:keys [songs player] :as db} [_ song]]
-  (when song
-    (js/Audio. (str "/uploads" (:file song))))
   (if (:queue player)
-    (assoc-in db [:player :status] :playing)
-    (assoc db :player {:queue (make-play-queue songs)
-                       :status :playing})))
-
-(comment
-  (.on audio "ended" #(dispatch! [:songs/next]))
-  )
+    (do
+      (audio/play!)
+      (assoc-in db [:player :status] :playing))
+    (do
+      (when song
+        (-> song
+            song->audio
+            audio/play!))
+      ;; TODO: Reorganize the queue so that the first item is `song`
+      (assoc db :player {:queue (make-play-queue songs)
+                         :status :playing}))))
 
 (defmethod handle-event :songs/pause
   [db _]
+  (audio/pause!)
   (assoc-in db [:player :status] :paused))
 
 (defmethod handle-event :songs/next
   [{:keys [songs player] :as db} _]
   (if-let [pq (next-track (:queue player))]
-    (assoc-in db [:player :queue] pq)
-    ;; ensure that status is updated when the queue
-    ;; is depleted.
+    (do
+      (audio/pause!)
+      (audio/play! (-> (get songs (track-id pq))
+                       song->audio))
+      (assoc-in db [:player :queue] pq))
+    ;; ensure that status is updated when the queue is depleted.
     (assoc db :player {:queue nil, :status nil})))
 
 (defmethod handle-event :songs/prev
-  [{:keys [songs play-queue] :as db} _]
-  (update-in db [:player :queue] previous-track))
+  [{:keys [songs player] :as db} [ev-name]]
+  (let [pq (previous-track (:queue player))]
+    (audio/pause!)
+    (audio/play! (-> (get songs (track-id pq))
+                     song->audio))
+    (assoc-in db [:player :queue] pq)))

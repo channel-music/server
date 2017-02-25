@@ -12,4 +12,7 @@
 (defn init! []
   (views/setup-app-routes! app-state)
   (mount!)
-  (GET "/api/songs" {:handler #(swap! app-state assoc :songs %)}))
+  (GET "/api/songs" {:handler #(->> %
+                                    (reduce (fn [acc {:keys [id] :as s}]
+                                              (assoc acc id s)) {})
+                                    (swap! app-state assoc :songs))}))

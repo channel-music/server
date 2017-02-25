@@ -11,6 +11,7 @@
                  [metosin/compojure-api "1.1.9"]
                  [metosin/ring-http-response "0.8.0"]
                  [org.clojure/clojure "1.8.0"]
+                 [org.clojure/core.async "0.3.426"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.postgresql/postgresql "9.4.1212"]
