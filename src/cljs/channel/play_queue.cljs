@@ -50,7 +50,7 @@
   "Create an audio object using the given `song`, setting up
   all callbacks."
   [song]
-  (audio/make-audio song {:on-ended #(dispatch [:songs/next])}))
+  (audio/make-audio song {:on-ended #(dispatch! [:songs/next])}))
 
 (defmethod handle-event :songs/play
   [{:keys [songs player] :as db} [_ song]]

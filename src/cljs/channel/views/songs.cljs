@@ -12,9 +12,11 @@
 
 (defn- song-title-display
   "Returns a human readable song title. This joins the title,
-  album and artist "
-  [{:keys [title album artist]}]
-  (clojure.string/join " - " [title album artist]))
+  album and artist."
+  [{:keys [title album artist] :as song}]
+  (if song
+    (clojure.string/join " - " [title album artist])
+    "Not Playing..."))
 
 (rum/defc audio-player [songs player]
   [:.row
