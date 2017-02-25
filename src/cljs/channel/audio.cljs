@@ -14,7 +14,7 @@
    (let [audio (js/Audio. (:file song))]
      ;; Setup callbacks
      (when on-ended
-       (set! (.-onended audio) #(on-ended audio)))
+       (.addEventListener audio "ended" #(on-ended audio) true))
      audio)))
 
 (def ^:private current-audio (atom nil))
