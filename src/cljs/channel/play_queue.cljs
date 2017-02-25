@@ -46,6 +46,12 @@
 ;;
 ;; Handlers
 ;;
+(defn- song->audio
+  "Create an audio object using the given `song`, setting up
+  all callbacks."
+  [song]
+  (audio/make-audio song {:on-ended #(dispatch [:songs/next])}))
+
 (defmethod handle-event :songs/play
   [{:keys [songs player] :as db} [_ song]]
   (if (:queue player)
@@ -55,8 +61,9 @@
     (do
       (when song
         (-> song
-            (audio/make-audio {:on-ended #(dispatch! [:songs/next])})
+            song->audio
             audio/play!))
+      ;; TODO: Reorganize the queue so that the first item is `song`
       (assoc db :player {:queue (make-play-queue songs)
                          :status :playing}))))
 
@@ -71,7 +78,7 @@
     (do
       (audio/pause!)
       (audio/play! (-> (get songs (track-id pq))
-                       (audio/make-audio {:on-ended #(dispatch! [:songs/next])})))
+                       song->audio))
       (assoc-in db [:player :queue] pq))
     ;; ensure that status is updated when the queue is depleted.
     (assoc db :player {:queue nil, :status nil})))
@@ -81,5 +88,5 @@
   (let [pq (previous-track (:queue player))]
     (audio/pause!)
     (audio/play! (-> (get songs (track-id pq))
-                     (audio/make-audio {:on-ended #(dispatch! [:songs/next])})))
+                     song->audio))
     (assoc-in db [:player :queue] pq)))

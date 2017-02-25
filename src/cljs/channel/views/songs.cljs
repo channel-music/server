@@ -63,7 +63,6 @@
    [:.row
     [:.col-md-12
      (song-list (vals (:songs (rum/react db))))]]
-   [:em (pr-str (:player (rum/react db)))]
    [:.row
     [:.col-md-12
      (let [{:keys [player songs]} (rum/react db)]
