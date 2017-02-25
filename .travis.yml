@@ -2,7 +2,7 @@ language: clojure
 
 # Setup DB service
 services:
-  - postgresql
+  - postgresql:9.6
 before_install:
   - createdb sound_app_test 
 test:
