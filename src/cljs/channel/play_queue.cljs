@@ -79,7 +79,7 @@
       (audio/pause!)
       (audio/play! (-> (get songs (track-id pq))
                        song->audio))
-      (assoc-in db [:player :queue] pq))
+      (update db :player merge {:queue pq, :status :playing}))
     ;; ensure that status is updated when the queue is depleted.
     (assoc db :player {:queue nil, :status nil})))
 
@@ -89,4 +89,4 @@
     (audio/pause!)
     (audio/play! (-> (get songs (track-id pq))
                      song->audio))
-    (assoc-in db [:player :queue] pq)))
+    (update db :player merge {:queue pq, :status :playing})))

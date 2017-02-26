@@ -16,7 +16,7 @@
   [:a#menu-toggle text])
 
 (rum/defc sidebar < rum/static [links]
-  [:#sidebar-wrapper
+  [:#sidebar
    [:ul.sidebar-nav
     [:li.sidebar-brand
      {:key (hash "root")} ;; TODO: find more robust method

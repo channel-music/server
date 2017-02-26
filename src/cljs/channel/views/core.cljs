@@ -1,6 +1,6 @@
 (ns channel.views.core
   (:require [channel.views.components :as c]
-            [channel.views.songs :refer [songs-page]]
+            [channel.views.songs :refer [songs-page audio-player]]
             [channel.views.upload :refer [upload-page]]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
@@ -29,12 +29,12 @@
   [:#wrapper
    (c/sidebar [["Songs" (songs-path)]
                ["Upload" (upload-path)]])
-   [:#page-content-wrapper
-    [:.row
-     [:.col-lg-12
-      (current-page
-       (:page (rum/react db))
-       db)]]]])
+   [:#page-content
+    (current-page
+     (:page (rum/react db))
+     db)]
+   (let [{:keys [player songs]} (rum/react db)]
+     (audio-player songs player))])
 
 (defn- hook-browser-navigation!
   "Hook browser history in to secretary config."

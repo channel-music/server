@@ -19,7 +19,7 @@
     "Not Playing..."))
 
 (rum/defc audio-player [songs player]
-  [:.row
+  [:.row#player
    [:.col-md-3
     [:.btn-group {:role "group"}
      [:button.btn.btn-default {:on-click
@@ -38,34 +38,27 @@
    [:.col-md-9
     [:p (song-title-display (current-song songs (:queue player)))]]])
 
-(rum/defc song-list [songs]
-  [:table.table.table-striped
-   [:thead
-    [:tr
-     [:th "#"]
-     [:th "Title"]
-     [:th "Artist"]
-     [:th "Album"]
-     [:th {:col-span 2}]]]
-   [:tbody
-    (for [s (sort-by (juxt :artist :album :track) songs)]
-      [:tr
-       {:key (:id s)}
-       [:th (:track s)]
-       [:td (:title s)]
-       [:td (:artist s)]
-       [:td (:album s)]
-       [:td [:button {:on-click
-                      #(events/dispatch! [:songs/play s])}
-             [:i.fa.fa-play]]]])]])
-
 (rum/defc songs-page < rum/reactive
   [db]
-  [:div#songs
-   [:.row
-    [:.col-md-12
-     (song-list (vals (:songs (rum/react db))))]]
-   [:.row
-    [:.col-md-12
-     (let [{:keys [player songs]} (rum/react db)]
-       (audio-player songs player))]]])
+  (let [songs (vals (:songs (rum/react db)))]
+    [:.row
+     [:.col-lg-12
+      [:table.table.table-striped
+       [:thead
+        [:tr
+         [:th "#"]
+         [:th "Title"]
+         [:th "Artist"]
+         [:th "Album"]
+         [:th {:col-span 2}]]]
+       [:tbody
+        (for [s (sort-by (juxt :artist :album :track) songs)]
+          [:tr
+           {:key (:id s)}
+           [:th (:track s)]
+           [:td (:title s)]
+           [:td (:artist s)]
+           [:td (:album s)]
+           [:td [:button {:on-click
+                          #(events/dispatch! [:songs/play s])}
+                 [:i.fa.fa-play]]]])]]]]))

@@ -9,6 +9,7 @@ body {
 
 #wrapper {
     padding-left: 0;
+    padding-bottom: 25px; /* half the size of the player */
     -webkit-transition: all 0.5s ease;
     -moz-transition: all 0.5s ease;
     -o-transition: all 0.5s ease;
@@ -19,7 +20,7 @@ body {
     padding-left: 250px;
 }
 
-#sidebar-wrapper {
+#sidebar {
     z-index: 100;
     position: fixed;
     left: 250px;
@@ -34,17 +35,17 @@ body {
     transition: all 0.5s ease;
 }
 
-#wrapper.toggled #sidebar-wrapper {
+#wrapper.toggled #sidebar {
     width: 250px;
 }
 
-#page-content-wrapper {
+#page-content {
     width: 100%;
     position: absolute;
     padding: 15px;
 }
 
-#wrapper.toggled #page-content-wrapper {
+#wrapper.toggled #page-content {
     position: absolute;
     margin-right: -250px;
 }
@@ -104,20 +105,20 @@ body {
         padding-left: 0;
     }
 
-    #sidebar-wrapper {
+    #sidebar {
         width: 250px;
     }
 
-    #wrapper.toggled #sidebar-wrapper {
+    #wrapper.toggled #sidebar {
         width: 0;
     }
 
-    #page-content-wrapper {
+    #page-content {
         padding: 20px;
         position: relative;
     }
 
-    #wrapper.toggled #page-content-wrapper {
+    #wrapper.toggled #page-content {
         position: relative;
         margin-right: 0;
     }
