@@ -77,7 +77,7 @@
        ;; TODO
        [:td [:i.fa.fa-file-audio-o]]
        [:td [:button.btn.btn-default
-             {:on-click #(swap! files disj file)}
+             {:on-click #(swap! files disj file)} ;; FIXME
              [:i.fa.fa-trash]]]])]])
 
 (rum/defcs upload-page < (rum/local #{} ::files)

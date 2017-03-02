@@ -3,41 +3,6 @@
             [channel.play-queue :as pq]
             [rum.core :as rum]))
 
-(defn current-song  [songs play-queue]
-  (->> play-queue pq/track-id (get songs)))
-
-;; TODO: Make a mixin for updating player song progress
-;;       *hint* use requestAnimationFrame or something
-;; TODO: Define a player progress component
-
-(defn- song-title-display
-  "Returns a human readable song title. This joins the title,
-  album and artist."
-  [{:keys [title album artist] :as song}]
-  (if song
-    (clojure.string/join " - " [title album artist])
-    "Not Playing..."))
-
-(rum/defc audio-player [songs player]
-  [:.row#player
-   [:.col-md-3
-    [:.btn-group {:role "group"}
-     [:button.btn.btn-default {:on-click
-                               #(events/dispatch! [:songs/prev])}
-      [:i.fa.fa-backward]]
-     (if (= (:status player) :playing)
-       [:button.btn.btn-default {:on-click
-                                 #(events/dispatch! [:songs/pause])}
-        [:i.fa.fa-pause]]
-       [:button.btn.btn-default {:on-click
-                                 #(events/dispatch! [:songs/play])}
-        [:i.fa.fa-play]])
-     [:butto.btn.btn-default {:on-click
-                              #(events/dispatch! [:songs/next])}
-      [:i.fa.fa-forward]]]]
-   [:.col-md-9
-    [:p (song-title-display (current-song songs (:queue player)))]]])
-
 (rum/defc songs-page < rum/reactive
   [db]
   (let [songs (vals (:songs (rum/react db)))]

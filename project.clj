@@ -15,7 +15,6 @@
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.postgresql/postgresql "9.4.1212"]
-                 [org.webjars.bower/tether "1.3.7"]
                  [com.mpatric/mp3agic "0.9.0"] ;; ID3 parser
                  [ring-middleware-format "0.7.0"]
                  [ring-webjars "0.1.1"]
@@ -24,6 +23,7 @@
                  ;; Clojurescript
                  [org.webjars/bootstrap "4.0.0-alpha.5"]
                  [org.webjars/font-awesome "4.7.0"]
+                 [org.webjars.bower/tether "1.3.7"]
                  [org.webjars/webjars-locator-jboss-vfs "0.1.0"]
                  [org.clojure/clojurescript "1.9.293" :scope "provided"]
                  [cljs-ajax "0.5.8"]

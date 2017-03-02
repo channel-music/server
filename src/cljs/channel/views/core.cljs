@@ -1,6 +1,7 @@
 (ns channel.views.core
   (:require [channel.views.components :as c]
-            [channel.views.songs :refer [songs-page audio-player]]
+            [channel.views.player :refer [audio-player]]
+            [channel.views.songs :refer [songs-page]]
             [channel.views.upload :refer [upload-page]]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
