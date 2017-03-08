@@ -1,39 +1,9 @@
 (ns channel.routes.services
-  (:require [channel.db.core :as db]
-            [channel.validation :as v]
-            [channel.songs :as songs]
-            [schema.core :as s]
+  (:require [channel.routes.services.songs :as songs]
             [compojure.api.sweet :refer :all]
             [compojure.api.upload :as upload]
-            [clojure.java.io :as io]
-            [ring.util.http-response :as ring-response]))
-
-(s/defschema Song {:id     Long
-                   :title  String
-                   :artist (s/maybe String)
-                   :album  (s/maybe String)
-                   :genre  (s/maybe String)
-                   :track  s/Int
-                   :file   String})
-;; Data required to update a song
-(s/defschema UpdatedSong (dissoc Song :id :file))
-
-(defn create-song! [file]
-  (if-let [errors (v/validate-create-song {:file file})]
-    (ring-response/bad-request errors)
-    (let [song (songs/create-song! file)]
-      (ring-response/created (str "/api/songs/" (:id song)) song))))
-
-(defn update-song! [old-song new-song]
-  (let [song (merge old-song new-song)]
-    (if-let [errors (v/validate-update-song song)]
-      (ring-response/bad-request errors)
-      (-> (songs/update-song! old-song new-song)
-          (ring-response/ok)))))
-
-(defn delete-song! [song]
-  (songs/delete-song! song)
-  (ring-response/no-content))
+            [ring.util.http-response :as ring-response]
+            [schema.core :as s]))
 
 (defapi service-routes
   {:swagger {:ui "/swagger-ui"
@@ -42,45 +12,39 @@
                            :title "Sound file API"
                            :description "API for uploading sound files."}}}}
 
-  (context "/api" []
+  (context "/api/songs" []
     :tags ["songs"]
 
-    (GET "/songs" []
-      :return [Song]
+    (GET "/" []
+      :return [songs/Song]
       :summary "Retrieve all songs."
-      (ring-response/ok (songs/all-songs)))
+      (songs/all-songs))
 
     ;; possible solution is to get the API to request ID3 data first,
     ;; then submit with the full required track data.
-    (POST "/songs" []
-      :return Song
+    (POST "/" []
+      :return songs/Song
       :multipart-params [file :- upload/TempFileUpload]
       :middleware [upload/wrap-multipart-params]
       :summary "Create a new song using an MP3 file."
       :description "All song data is extracted from the ID3 metadata of the MP3"
-      (create-song! file))
+      (songs/create-song! file))
 
-    (GET "/songs/:id" []
-      :return (s/maybe Song)
+    (GET "/:id" []
+      :return (s/maybe songs/Song)
       :path-params [id :- Long]
       :summary "Retrieve a specific song."
-      (if-let [song (songs/song-by-id id)]
-        (ring-response/ok song)
-        (ring-response/not-found)))
+      (songs/get-song id))
 
-    (PUT "/songs/:id" []
-      :return Song
+    (PUT "/:id" []
+      :return songs/Song
       :path-params [id :- Long]
-      :body [new-song UpdatedSong]
+      :body [song songs/UpdatedSong]
       :summary "Update song details."
-      (if-let [old-song (db/song-by-id {:id id})]
-        (update-song! old-song new-song)
-        (ring-response/not-found)))
+      (songs/update-song! id song))
 
-    (DELETE "/songs/:id" []
+    (DELETE "/:id" []
       :return nil
       :path-params [id :- Long]
       :summary "Delete a specific song."
-      (if-let [song (db/song-by-id {:id id})]
-        (delete-song! (db/song-by-id {:id id}))
-        (ring-response/not-found)))))
+      (songs/delete-song! id))))
