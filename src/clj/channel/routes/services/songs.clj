@@ -7,13 +7,13 @@
             [ring.util.http-response :as ring-response]
             [channel.db.core :as db]))
 
-(s/defschema Song {:id     Long
-                   :title  String
-                   :artist (s/maybe String)
-                   :album  (s/maybe String)
-                   :genre  (s/maybe String)
+(s/defschema Song {:id     s/Int
+                   :title  s/Str
+                   :artist (s/maybe s/Str)
+                   :album  (s/maybe s/Str)
+                   :genre  (s/maybe s/Str)
                    :track  s/Int
-                   :file   String})
+                   :file   s/Str})
 ;; Data required to update a song
 (s/defschema UpdatedSong (dissoc Song :id :file))
 
