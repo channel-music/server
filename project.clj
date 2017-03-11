@@ -2,7 +2,8 @@
   :description "FIXME: write description"
   :url "https://github.com/kalouantonis/channel"
 
-  :dependencies [[compojure "1.5.1"]
+  :dependencies [[buddy "1.3.0"]
+                 [compojure "1.5.1"]
                  [conman "0.6.2"]
                  [cprop "0.1.9"]
                  [luminus-immutant "0.2.2"]
