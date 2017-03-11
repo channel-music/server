@@ -12,9 +12,6 @@
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]])
   (:import [javax.servlet ServletContext]))
 
-(mount/defstate auth-backend
-  :start (backends/jws {:secret (env :jwt-secret)}))
-
 (defn wrap-context [handler]
   (fn [request]
     (binding [*app-context*
@@ -59,7 +56,7 @@
 
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
-      (wrap-authentication auth-backend)
+      (wrap-authentication (backends/jws {:secret (env :jwt-secret)}))
       wrap-webjars
       (wrap-defaults
         (-> site-defaults
