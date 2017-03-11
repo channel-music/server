@@ -26,7 +26,6 @@
     (ring-response/not-found)))
 
 (defn create-song! [file]
-
   (if-let [errors (v/validate-create-song {:file file})]
     (ring-response/bad-request errors)
     (let [song (songs/create-song! file)]
