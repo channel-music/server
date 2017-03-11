@@ -1,13 +1,19 @@
 (ns channel.middleware
-  (:require [channel.env :refer [defaults]]
+  (:require [buddy.auth.backends :as backends]
+            [buddy.auth.middleware :refer [wrap-authentication]]
+            [channel.env :refer [defaults]]
             [clojure.tools.logging :as log]
             [channel.layout :refer [*app-context* error-page]]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.format :refer [wrap-restful-format]]
             [channel.config :refer [env]]
+            [mount.core :as mount]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]])
   (:import [javax.servlet ServletContext]))
+
+(mount/defstate auth-backend
+  :start (backends/jws {:secret (env :jwt-secret)}))
 
 (defn wrap-context [handler]
   (fn [request]
@@ -53,6 +59,7 @@
 
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
+      (wrap-authentication auth-backend)
       wrap-webjars
       (wrap-defaults
         (-> site-defaults

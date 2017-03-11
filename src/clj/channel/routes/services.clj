@@ -18,17 +18,8 @@
     (POST "/login" req
       :summary "Authenticate user"
       :body-params [username :- s/Str, password :- s/Str]
-      :return auth/LoginResponse
+      :return s/Str
       (auth/login username password req)))
-
-  (context "/api/users" []
-    ;; :auth-rules admin?
-    :tags ["users"]
-
-    (GET "/" []
-      :summary "Retrieve all users"
-      :return [auth/User]
-      (auth/all-users)))
 
   (context "/api/songs" []
     :tags ["songs"]
