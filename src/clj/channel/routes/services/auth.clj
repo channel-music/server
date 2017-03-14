@@ -9,7 +9,8 @@
 
 (s/defschema User {:id       s/Int
                    :username s/Str
-                   :email    (s/maybe s/Str)})
+                   :email    (s/maybe s/Str)
+                   :admin?   s/Bool})
 
 (defn create-auth-token [user]
   (jwt/sign (dissoc user :password) (env :jwt-secret)))
