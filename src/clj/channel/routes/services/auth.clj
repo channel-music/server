@@ -10,7 +10,7 @@
 (s/defschema User {:id       s/Int
                    :username s/Str
                    :email    (s/maybe s/Str)
-                   :admin?   s/Bool})
+                   :admin    s/Bool})
 
 (defn create-auth-token [user]
   (jwt/sign (dissoc user :password) (env :jwt-secret)))
@@ -29,3 +29,6 @@
         (log/info "login failed for" username remote-addr server-name)
         (ring-response/unauthorized "Invalid login credentials")))
     (ring-response/not-found)))
+
+(defn all-users []
+  (map #(dissoc % :password) (db/all-users)))

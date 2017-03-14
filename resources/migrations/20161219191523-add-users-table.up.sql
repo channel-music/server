@@ -3,7 +3,7 @@ CREATE TABLE users
  username VARCHAR(30)  UNIQUE NOT NULL,
  email    VARCHAR(30),
  password VARCHAR(100) NOT NULL
- is_admin BOOLEAN      NOT NULL DEFAULT false);
+ admin    BOOLEAN      NOT NULL DEFAULT false);
 
 ---
 --- username is always queried
