@@ -27,3 +27,20 @@
   (let [f (maybe (fn [& _] :called))]
     (testing "calls function if there are no parameters"
       (is (= (f) :called)))))
+
+(deftest sorted-map-by-value
+  (testing "with a nested map"
+    (testing "single key"
+      (let [m {1 {:priority 5}, 2 {:priority 3}, 3 {:priority 10}}]
+        (is (= (map->sorted-map :priority m)
+               {2 {:priority 3}, 1 {:priority 5}, 3 {:priority 10}}))))
+    (testing "multiple keys with priority"
+      (let [m {1 {:track 1, :artist "Black Sabbath", :album "Black Sabbath"}
+               2 {:track 3, :artist "Black Sabbath", :album "Paranoid"}
+               3 {:track 1, :artist "Black Sabbath", :album "Paranoid"}
+               4 {:track 2, :artist "Black Sabbath", :album "Black Sabbath"}}]
+        (is (= (map->sorted-map (juxt :artist :album :track) m)
+               {1 {:track 1, :artist "Black Sabbath", :album "Black Sabbath"}
+                4 {:track 2, :artist "Black Sabbath", :album "Black Sabbath"}
+                3 {:track 1, :artist "Black Sabbath", :album "Paranoid"}
+                2 {:track 3, :artist "Black Sabbath", :album "Paranoid"}}))))))
