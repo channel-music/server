@@ -1,16 +1,41 @@
 (ns channel.routes.services
-  (:require [channel.routes.services.auth :as auth]
+  (:require [buddy.auth :refer [authenticated?]]
+            [buddy.auth.accessrules :refer [restrict]]
+            [channel.routes.services.auth :as auth]
             [channel.routes.services.songs :as songs]
             [compojure.api.sweet :refer :all]
+            [compojure.api.meta :refer [restructure-param]]
             [compojure.api.upload :as upload]
+            [ring.util.http-response :as response]
             [schema.core :as s]))
+
+(defn admin? [request]
+  (and (authenticated? request)
+       (:admin (:identity request))))
+
+(defn access-error [_ _]
+  (response/unauthorized "Access denied for current user"))
+
+(defn wrap-restricted [handler rule]
+  (restrict handler {:handler rule
+                     :on-error access-error}))
+
+(defmethod restructure-param :auth-rules
+  [_ rule acc]
+  (update-in acc [:middleware] conj [wrap-restricted rule]))
 
 (defapi service-routes
   {:swagger {:ui "/swagger-ui"
              :spec "/swagger.json"
              :data {:info {:version "1.0.0"
                            :title "Channel API"
-                           :description "API for the Channel web app"}}}}
+                           :description "API for the Channel web app"}
+                    ;; Add fields to swagger-ui to provide the value for
+                    ;; Authorization header.
+                    :securityDefinitions {:api_key {:type "apiKey"
+                                                    :name "Authorization"
+                                                    :in "header"}}}}}
+
 
   (context "/api/auth" []
     :tags ["auth"]
@@ -21,7 +46,23 @@
       :return s/Str
       (auth/login username password req)))
 
+  (context "/api/users" []
+    :auth-rules admin?
+    :tags ["users"]
+
+    (GET "/" []
+      :summary "Retrieve all users."
+      :return [auth/User]
+      (auth/all-users))
+
+    (POST "/" []
+      :summary "Create a new user"
+      :body-params [user :- auth/User]
+      :return auth/User
+      (auth/create-user! user)))
+
   (context "/api/songs" []
+    :auth-rules authenticated?
     :tags ["songs"]
 
     (GET "/" []

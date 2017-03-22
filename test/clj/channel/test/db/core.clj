@@ -23,11 +23,10 @@
                {:id         1
                 :email      nil
                 :username   "sam-smith"
-                :password   "pass"
-                :admin      true})))
+                :password   "pass"})))
     (is (= {:id         1
             :username   "sam-smith"
             :email      nil  ;; Email is optional
             :password   "pass"
-            :admin      true}
+            :admin      false}
            (db/user-by-id t-conn {:id 1})))))

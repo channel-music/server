@@ -32,3 +32,6 @@
 
 (defn all-users []
   (map #(dissoc % :password) (db/all-users)))
+
+(defn create-user! [user]
+  (db/create-user! user))
