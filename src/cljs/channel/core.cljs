@@ -2,6 +2,7 @@
   (:require [ajax.core :refer [GET]]
             [channel.db :refer [app-state]]
             [channel.views.core :as views]
+            [channel.utils :refer [map->sorted-map]]
             [rum.core :as rum]))
 
 (defn mount! []
@@ -15,4 +16,5 @@
   (GET "/api/songs" {:handler #(->> %
                                     (reduce (fn [acc {:keys [id] :as s}]
                                               (assoc acc id s)) {})
+                                    (map->sorted-map (juxt :artist :album :track))
                                     (swap! app-state assoc :songs))}))

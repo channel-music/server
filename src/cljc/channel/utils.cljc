@@ -18,6 +18,15 @@
     (when-not (and (seq args) (any-nil? args))
       (apply f args))))
 
+(defn map->sorted-map
+  "Converts a hash-map `m` to a sorted hash-map using `compfn` to
+  compare the values of `m`."
+  [compfn m]
+  (let [sorter (fn [k1 k2]
+                 (compare (compfn (get m k1))
+                          (compfn (get m k2))))]
+    (into (sorted-map-by sorter) m)))
+
 ;;
 ;; Async
 ;;
