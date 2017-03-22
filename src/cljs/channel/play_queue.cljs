@@ -40,3 +40,7 @@
 (def track-id
   "Returns the ID of the song in the current play queue."
   (maybe z/node))
+
+(def remaining-tracks
+  "Returns the remaining tracks left in the play queue."
+  z/rights)

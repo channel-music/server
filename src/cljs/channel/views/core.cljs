@@ -1,6 +1,7 @@
 (ns channel.views.core
   (:require [channel.views.components :as c]
             [channel.views.player :refer [audio-player]]
+            [channel.views.play-queue :refer [play-queue-page]]
             [channel.views.songs :refer [songs-page]]
             [channel.views.upload :refer [upload-page]]
             [goog.events :as events]
@@ -17,18 +18,21 @@
   (fn [page _] page))
 (defmethod current-page :songs [_ db]
   (songs-page db))
+(defmethod current-page :play-queue [_ db]
+  (play-queue-page db))
 (defmethod current-page :upload [_ db]
   (upload-page db))
 ;; TODO: Make 404 page
 (defmethod current-page nil [_ db]
   (songs-page db))
 
-(declare songs-path upload-path)
+(declare songs-path play-queue-path upload-path)
 
 (rum/defc main-page < rum/reactive
   [db]
   [:#wrapper
    (c/sidebar [["Songs" (songs-path)]
+               ["Play Queue" (play-queue-path)]
                ["Upload" (upload-path)]])
    [:#page-content
     (current-page
@@ -55,7 +59,8 @@
     (swap! db assoc :page :songs))
   (defroute songs-path "/songs" []
     (swap! db assoc :page :songs))
-
+  (defroute play-queue-path "/play-queue" []
+     (swap! db assoc :page :play-queue))
   (defroute upload-path "/upload" []
     (swap! db assoc :page :upload))
 
