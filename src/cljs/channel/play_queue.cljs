@@ -44,3 +44,12 @@
 (def remaining-tracks
   "Returns the remaining tracks left in the play queue."
   z/rights)
+
+(defn skip-until
+  "Move the play queue until `pred` returns true or until
+  exhausted."
+  [pq pred]
+  (cond
+    (nil? pq) pq
+    (pred (track-id pq)) pq
+    :else (recur (next-track pq) pred)))

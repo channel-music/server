@@ -15,18 +15,17 @@
 
 (defmethod handle-event :songs/play
   [{:keys [songs player] :as db} [_ song]]
-  (if (:queue player)
+  (if (and (not song) (:queue player))
     (do
       (audio/play!)
       (assoc-in db [:player :status] :playing))
     (do
-      (when song
-        (-> song
-            song->audio
-            audio/play!))
-      ;; TODO: Reorganize the queue so that the first item is `song`
-      (assoc db :player {:queue (pq/make-play-queue songs)
-                         :status :playing}))))
+      (audio/pause!)
+      (-> song song->audio audio/play!)
+      (let [pq (pq/make-play-queue songs)]
+        ;; Reorganize the queue so that the first item is `song`
+        (assoc db :player {:queue (pq/skip-until pq #(= % (:id song)))
+                           :status :playing})))))
 
 (defmethod handle-event :songs/pause
   [db _]
