@@ -1,6 +1,5 @@
 (ns channel.views.songs
   (:require [channel.events :as events]
-            [channel.play-queue :as pq]
             [rum.core :as rum]))
 
 (rum/defc songs-page < rum/reactive
