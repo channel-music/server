@@ -9,17 +9,8 @@
 
 (defn make-audio
   "Create a new `js/Audio` object using song data."
-  ([song] (make-audio song nil))
-  ([song {:keys [on-ended on-time-update]}]
-   (let [audio (js/Audio. (:file song))]
-     ;; Setup callbacks
-     ;; TODO: Consider making generic
-     (when on-ended
-       (.addEventListener audio "ended" #(on-ended audio) true))
-     (when on-time-update
-       (.addEventListener audio "timeupdate"
-                          #(on-time-update audio) true))
-     audio)))
+  [song]
+  (js/Audio. (:file song)))
 
 (def ^:private current-audio (atom nil))
 
@@ -36,3 +27,18 @@
    ;; TODO: Consider pausing old audio
    (reset! current-audio audio)
    (.play audio)))
+
+;; FIXME: Working with @current-audio is becomeing unwieldy
+(defn progress
+  "Returns the current track progress as a value between 0 and 1."
+  ([] (progress @current-audio))
+  ([audio]
+   (/ (.-currentTime audio) (.-duration audio))))
+
+(defn seek!
+  "Seek track to a certain point. Expects a `value` between 0 and 1,
+  representing the beginning and end of the track."
+  ([value] (seek! @current-audio value))
+  ([audio value]
+   (let [curr-time (* value (.-duration audio))]
+     (set! (.-currentTime audio) curr-time))))

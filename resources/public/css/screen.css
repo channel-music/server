@@ -62,6 +62,6 @@ body {
     color: #fff;
 }
 
-#player progress {
+#player #seekbar {
     width: 80%;
 }
