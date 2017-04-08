@@ -4,6 +4,9 @@
             [channel.play-queue :as pq]
             [rum.core :as rum]))
 
+(defn current-song  [songs play-queue]
+  (->> play-queue pq/track-id (get songs)))
+
 ;;
 ;; Handlers
 ;;
@@ -11,7 +14,10 @@
   "Create an audio object using the given `song`, setting up
   all callbacks."
   [song]
-  (audio/make-audio song {:on-ended #(dispatch! [:songs/next])}))
+  (audio/make-audio
+   song
+   {:on-ended #(dispatch! [:songs/next])
+    :on-time-update #(dispatch! [:songs/progress %])}))
 
 (defmethod handle-event :songs/play
   [{:keys [songs player] :as db} [_ song]]
@@ -20,12 +26,14 @@
       (audio/play!)
       (assoc-in db [:player :status] :playing))
     (do
+      ;; FIXME: having 2 tracks playing at the same time should be impossible
       (audio/pause!)
       (-> song song->audio audio/play!)
-      (let [pq (pq/make-play-queue songs)]
-        ;; Reorganize the queue so that the first item is `song`
-        (assoc db :player {:queue (pq/skip-until pq #(= % (:id song)))
-                           :status :playing})))))
+      ;; Reorganize the queue so that the first item is `song`
+      (assoc db :player {:queue (-> (pq/make-play-queue songs)
+                                    (pq/skip-until #(= % (:id song))))
+                         :status :playing
+                         :progress 0}))))
 
 (defmethod handle-event :songs/pause
   [db _]
@@ -37,8 +45,7 @@
   (if-let [pq (pq/next-track (:queue player))]
     (do
       (audio/pause!)
-      (audio/play! (-> (get songs (pq/track-id pq))
-                       song->audio))
+      (audio/play! (-> (current-song songs pq) song->audio))
       (update db :player merge {:queue pq, :status :playing}))
     ;; ensure that status is updated when the queue is depleted.
     (assoc db :player {:queue nil, :status nil})))
@@ -47,16 +54,17 @@
   [{:keys [songs player] :as db} [ev-name]]
   (let [pq (pq/previous-track (:queue player))]
     (audio/pause!)
-    (audio/play! (-> (get songs (pq/track-id pq))
-                     song->audio))
+    (audio/play! (-> (current-song songs pq) song->audio))
     (update db :player merge {:queue pq, :status :playing})))
+
+(defmethod handle-event :songs/progress
+  [db [_ audio]]
+  (let [ratio (/ (.-currentTime audio) (.-duration audio))]
+    (assoc-in db [:player :progress] ratio)))
 
 ;;
 ;; Views
 ;;
-
-(defn current-song  [songs play-queue]
-  (->> play-queue pq/track-id (get songs)))
 
 ;; TODO: Make a mixin for updating player song progress
 ;;       *hint* use requestAnimationFrame or something
@@ -72,6 +80,7 @@
 
 (rum/defc audio-player [songs player]
   [:.row#player
+   [:progress {:value (:progress player) :max 1}]
    [:.col-md-3
     [:.btn-group {:role "group"}
      [:button.btn.btn-default {:on-click
@@ -84,8 +93,8 @@
        [:button.btn.btn-default {:on-click
                                  #(dispatch! [:songs/play])}
         [:i.fa.fa-play]])
-     [:butto.btn.btn-default {:on-click
-                              #(dispatch! [:songs/next])}
+     [:button.btn.btn-default {:on-click
+                               #(dispatch! [:songs/next])}
       [:i.fa.fa-forward]]]]
    [:.col-md-9
     [:p (song-title-display (current-song songs (:queue player)))]]])
