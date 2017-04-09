@@ -4,13 +4,13 @@
             [channel.play-queue :as pq]
             [rum.core :as rum]))
 
+;;
+;; Utils
+;;
 (defn current-song  [songs play-queue]
   (->> play-queue pq/track-id (get songs)))
 
-;;
-;; Handlers
-;;
-(defn- song->audio
+(defn song->audio
   "Create an audio object using the given `song`, setting up
   all callbacks."
   [song]
@@ -19,6 +19,18 @@
     (.addEventListener audio "timeupdate" #(dispatch! [:songs/progress audio]) true)
     audio))
 
+(defn switch-song!
+  "Changes the player to a different song by pausing the current
+  one, playing the new one and returning the updated player state."
+  [player song]
+  (audio/pause! (:audio player))
+  (let [new-audio (song->audio song)]
+    (audio/play! new-audio)
+    (merge player {:audio new-audio, :status :playing, :progress 0})))
+
+;
+;; Handlers
+;;
 (defmethod handle-event :songs/play
   [{:keys [songs player] :as db} [_ song]]
   (if (and (not song) (:queue player))
@@ -26,15 +38,11 @@
       (audio/play! (:audio player))
       (assoc-in db [:player :status] :playing))
     (do
-      (audio/pause! (:audio player))
-      (let [audio (song->audio song)]
-        (audio/play! audio)
+      (let [new-player (switch-song! player song)
+            pq (-> (pq/make-play-queue songs)
+                   (pq/skip-until #(= % (:id song))))]
         ;; Reorganize the queue so that the first item is `song`
-        (assoc db :player {:queue (-> (pq/make-play-queue songs)
-                                      (pq/skip-until #(= % (:id song))))
-                           :audio audio
-                           :status :playing
-                           :progress 0})))))
+        (update db :player merge new-player {:queue pq})))))
 
 (defmethod handle-event :songs/pause
   [db _]
@@ -44,25 +52,16 @@
 (defmethod handle-event :songs/next
   [{:keys [songs player] :as db} _]
   (if-let [pq (pq/next-track (:queue player))]
-    (do
-      (audio/pause! (:audio player))
-      (let [new-audio (-> (current-song songs pq) song->audio)]
-        (audio/play! new-audio)
-        (update db :player merge {:queue pq
-                                  :audio new-audio
-                                  :status :playing})))
+    (let [new-player (switch-song! player (current-song songs pq))]
+      (update db :player merge new-player {:queue pq}))
     ;; ensure that status is updated when the queue is depleted.
     (assoc db :player {:queue nil, :status nil, :audio nil})))
 
 (defmethod handle-event :songs/prev
   [{:keys [songs player] :as db} [ev-name]]
   (let [pq (pq/previous-track (:queue player))
-        new-audio (-> (current-song songs pq) song->audio)]
-    (audio/pause! (:audio player))
-    (audio/play! new-audio)
-    (update db :player merge {:queue pq
-                              :audio new-audio
-                              :status :playing})))
+        new-player (switch-song! player (current-song songs pq))]
+    (update db :player merge new-player {:queue pq})))
 
 (defmethod handle-event :songs/progress
   [db _]
