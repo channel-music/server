@@ -13,8 +13,6 @@ import javax.persistence.Id
 data class Song(val title: String,
                 val artist: String,
                 val album: String) {
-    constructor(): this("", "", "")
-
     @Id
     @GeneratedValue
     var id: Long? = null
