@@ -12,7 +12,4 @@ cache:
  - $HOME/.gradle/caches/
  - $HOME/.gradle/wrapper/
 
-install: ./gradlew assemble
-build: ./gradlew check
-script:
-  - ./gradlew test
+script: ./gradlew test
