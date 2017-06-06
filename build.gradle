@@ -44,6 +44,8 @@ dependencies {
     compile "com.h2database:h2:1.4.195"
     // Development
     compile "org.springframework.boot:spring-boot-devtools"
+    // Parsing MP3's
+    compile "com.mpatric:mp3agic:0.9.0"
     // Testing
     testCompile "org.springframework.boot:spring-boot-starter-test"
 }
