@@ -39,7 +39,7 @@ class SongNotFoundException(songId: Long) : RuntimeException("could not find son
 
 @RestController
 @RequestMapping("/songs")
-class SongRestController(val songRepository: SongRepository) {
+class SongRestController(val songRepository: SongRepository, val storageService: StorageService) {
 
     @RequestMapping(method = arrayOf(RequestMethod.GET))
     fun allSongs(): Resources<SongResource> =
