@@ -14,9 +14,11 @@ import javax.persistence.GeneratedValue
 import javax.persistence.Id
 
 @Entity
-data class Song(val title: String,
-                val artist: String,
-                val album: String) {
+data class Song(
+    val title: String,
+    val artist: String,
+    val album: String
+) {
     @Id
     @GeneratedValue
     var id: Long? = null

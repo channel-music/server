@@ -36,6 +36,8 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    // JSON
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.8.7"
     // Web
     compile "org.springframework.boot:spring-boot-starter-web"
     compile "org.springframework.boot:spring-boot-starter-hateoas"
