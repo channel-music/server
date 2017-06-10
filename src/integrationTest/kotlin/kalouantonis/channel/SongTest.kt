@@ -1,5 +1,6 @@
 package kalouantonis.channel
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
