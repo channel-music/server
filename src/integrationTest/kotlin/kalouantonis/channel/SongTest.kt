@@ -1,6 +1,5 @@
 package kalouantonis.channel
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -9,15 +8,16 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
 // FIXME: Probably a terrible idea
 fun Song.toJson(): String = jacksonObjectMapper().writeValueAsString(this)
 
+// TODO: This is an integration test, move to a separate folder
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,12 +37,14 @@ class SongRestControllerTest {
         songs.add(songRepository.save(Song(
                 title = "Insomnia",
                 artist = "Faithless",
-                album = "Insomnia: The Best Of Faithless"
+                album = "Insomnia: The Best Of Faithless",
+                filePath = "not-a-file-path.mp3"
         )))
         songs.add(songRepository.save(Song(
                 title = "Teardrop",
                 artist = "Massive Attack",
-                album = "Mezzanine"
+                album = "Mezzanine",
+                filePath = "not-a-file-path.mp3"
         )))
     }
 
@@ -88,11 +90,12 @@ class SongRestControllerTest {
     }
 
     @Test
-    fun `create a song using valid JSON`() {
+    fun `create a song using valid media file`() {
         val newSong = Song(
                 title = "At the River",
                 artist = "Groove Armada",
-                album = "The best of"
+                album = "The best of",
+                filePath = "not-a-file-path.mp3"
         )
         mockMvc.perform(post("/songs").content(newSong.toJson()).contentType(contentType))
                 .andExpect(status().isCreated)
@@ -101,9 +104,16 @@ class SongRestControllerTest {
     }
 
     @Test
-    fun `fail at creating a song with invalid JSON`() {
-        mockMvc.perform(post("/songs").content("{\"title\": \"Some title\"}").contentType(contentType))
+    fun `fail at creating a song with invalid media file`() {
+        val multipartFile = MockMultipartFile("file", "test.txt", "text/plain",
+                "This isn't a media file".byteInputStream())
+        mockMvc.perform(multipart("/songs").file(multipartFile))
                 .andExpect(status().isBadRequest)
         assertEquals(songRepository.count().toInt(), songs.size)
+    }
+
+    @Test
+    fun `fail at creating a duplicate song`() {
+
     }
 }
