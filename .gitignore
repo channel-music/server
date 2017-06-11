@@ -1,5 +1,7 @@
 .idea/
-.gradle/
-build/
-*.iml
-classes/
+target/
+log/
+profiles.clj
+.lein-env
+.lein-failures
+.nrepl-port

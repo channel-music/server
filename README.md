@@ -1,29 +1,21 @@
-# Channel
+# channel
 
-[![Build Status](https://travis-ci.org/kalouantonis/channel.svg?branch=master)](https://travis-ci.org/kalouantonis/channel)
+generated using Luminus version "2.9.11.60"
 
-A self-hosted music streaming application.
-
-**WARNING: This project is heavily WIP**
+FIXME
 
 ## Prerequisites
 
-You will need [Java JDK 8][jdk8] installed.
+You will need [Leiningen][1] 2.0 or above installed.
 
-[jdk8]: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+[1]: https://github.com/technomancy/leiningen
 
 ## Running
 
 To start a web server for the application, run:
 
-    ./gradlew bootRun
-    
-## Testing
+    lein run
 
-To run all tests run:
-
-    ./gradlew test
-    
 ## License
 
-Licensed under [Apache License v2](LICENSE).
+Copyright © 2017 FIXME
