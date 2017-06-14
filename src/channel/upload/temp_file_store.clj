@@ -1,10 +1,12 @@
-(ns channel.temp-file-store
+(ns channel.upload.temp-file-store
   "A multipart storage engine for storing uploads in temporary files.
   Does the same as the ring middleware store, but preserves file extension."
-  (:require [clojure.java.io :as io])
-  (:import (java.io File)
-           ;; TODO: add explicit dependency
-           (org.apache.commons.io FilenameUtils)))
+  (:require
+   [clojure.java.io :as io])
+  (:import
+   (java.io File)
+   ;; TODO: add explicit dependency
+   (org.apache.commons.io FilenameUtils)))
 
 
 (defn- background-thread [^Runnable f]

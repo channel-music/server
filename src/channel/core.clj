@@ -1,11 +1,12 @@
 (ns channel.core
-  (:require [channel.handler :as handler]
-            [luminus.repl-server :as repl]
-            [luminus.http-server :as http]
-            [channel.config :refer [env]]
-            [clojure.tools.cli :refer [parse-opts]]
-            [clojure.tools.logging :as log]
-            [mount.core :as mount])
+  (:require
+   [channel.config :refer [env]]
+   [channel.handler :as handler]
+   [clojure.tools.cli :refer [parse-opts]]
+   [clojure.tools.logging :as log]
+   [luminus.repl-server :as repl]
+   [luminus.http-server :as http]
+   [mount.core :as mount])
   (:gen-class))
 
 

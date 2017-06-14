@@ -1,7 +1,8 @@
 (ns channel.media
-  (:import (org.jaudiotagger.audio AudioFileIO)
-           (org.jaudiotagger.audio.exceptions)
-           (org.jaudiotagger.tag FieldKey)))
+  (:import
+   (org.jaudiotagger.audio AudioFileIO)
+   (org.jaudiotagger.audio.exceptions)
+   (org.jaudiotagger.tag FieldKey Tag)))
 
 
 (defn parse-unsigned-int
@@ -16,7 +17,7 @@
 (defn make-metadata
   "Returns a metadata map, containing metadata about a media file, using a
   `audio-tag`."
-  [audio-tag]
+  [^Tag audio-tag]
   {:title        (.getFirst audio-tag FieldKey/TITLE)
    :album        (.getFirst audio-tag FieldKey/ALBUM)
    :artist       (.getFirst audio-tag FieldKey/ARTIST)
@@ -30,7 +31,10 @@
 
 (defn parse-media-file
   "Attempts to parse `file` and return its metadata. If parsing fails, an
-  exception is thrown. Supports MP3, MP4, M4A, MP4P, OGG, FLAC, WMA and WAV."
+  exception is thrown. Supports MP3, MP4, M4A, MP4P, OGG, FLAC, WMA and WAV.
+
+  Note that the extension of the file is significant, so even if the file contains
+  correct media data it will not be parsed if it has an invalid extension (E.g. tmp or txt)."
   [file]
   (try
     (let [audio-file (AudioFileIO/read file)]

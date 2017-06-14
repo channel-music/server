@@ -12,7 +12,7 @@
     (io/file (.getPath url))))
 
 
-(deftest media-test
+(deftest parse-media-file-test
   (doseq [format supported-formats]
     (testing (str "parses " format " format")
       (let [metadata (->> (str "test." format)
@@ -46,3 +46,20 @@
       (is false "Parsing corrupt media file should have failed")
       (catch Exception e
         (is (= :invalid-audio-frame (:type (ex-data e))))))))
+
+
+(deftest parse-unsigned-int-test
+  (testing "returns an integer when using a string containing an unsigned integer"
+    (is (= 3 (media/parse-unsigned-int "3"))))
+
+  (testing "returns nil when a signed integer is used"
+    (is (= nil (media/parse-unsigned-int "-15"))))
+
+  (testing "returns nil when using decimal values"
+    (is (= nil (media/parse-unsigned-int "2.25"))))
+
+  (testing "returns nil when using an invalid string"
+    (is (= nil (media/parse-unsigned-int "a string"))))
+
+  (testing "returns nil when using nil"
+    (is (= nil (media/parse-unsigned-int nil)))))

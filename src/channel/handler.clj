@@ -1,11 +1,12 @@
 (ns channel.handler
-  (:require [compojure.core :refer [routes wrap-routes]]
-            [channel.routes.services :refer [service-routes]]
-            [compojure.route :as route]
-            [channel.env :refer [defaults]]
-            [mount.core :as mount]
-            [channel.middleware :as middleware]
-            [ring.util.http-response :as response]))
+  (:require
+   [channel.env :refer [defaults]]
+   [channel.middleware :as middleware]
+   [channel.routes.services :refer [service-routes]]
+   [compojure.core :refer [routes wrap-routes]]
+   [compojure.route :as route]
+   [mount.core :as mount]
+   [ring.util.http-response :as response]))
 
 
 (mount/defstate init-app

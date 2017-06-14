@@ -18,11 +18,10 @@
           (is (= 200 (:status response)))
           (is (= songs (parse-body (:body response))))))
 
-      (testing "create a new song"
-        (let [new-song {:title "Insomnia", :album "The Best Of", :artist "Faithless"}
-              response ((app) (-> (ring/request :post "/songs")
-                                  (ring/content-type "application/json")
-                                  (ring/body (cheshire/generate-string new-song))))]
+      (testing "upload a valid music file"
+        (let [response ((app) (-> (ring/request :post "/upload")
+                                  (ring/content-type "multipart/form-data")
+                                  (ring/body)))]
           (is (= 201 (:status response)))
           (is (= "http://localhost/songs/1" (get-in response [:headers "Location"])))
           (is (= nil (:body response))))))))
