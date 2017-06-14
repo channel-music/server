@@ -40,7 +40,6 @@
         (response/created "/songs/1"))
       (catch Exception e
         (io/delete-file (:tempfile file)) ;; cleanup
-        (log/error "Song upload failed:" e)
         (response/bad-request {:detail (.getMessage e), :type (:type (ex-data e))}))))
 
   (context "/songs" []

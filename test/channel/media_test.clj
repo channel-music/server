@@ -1,7 +1,8 @@
 (ns channel.media-test
-  (:require [channel.media :as media]
-            [clojure.java.io :as io]
-            [clojure.test :refer :all]))
+  (:require
+   [channel.media :as media]
+   [clojure.java.io :as io]
+   [clojure.test :refer :all]))
 
 
 (def supported-formats ["mp3" "wav" "ogg" "flac"])

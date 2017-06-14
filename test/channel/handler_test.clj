@@ -1,7 +1,8 @@
 (ns channel.handler-test
-  (:require [clojure.test :refer :all]
-            [ring.mock.request :refer :all]
-            [channel.handler :refer :all]))
+  (:require
+   [clojure.test :refer :all]
+   [ring.mock.request :refer :all]
+   [channel.handler :refer :all]))
 
 
 (deftest test-app

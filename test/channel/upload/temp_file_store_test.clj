@@ -1,7 +1,8 @@
-(ns channel.temp-file-store-test
-  (:require [channel.temp-file-store :refer [temp-file-store]]
-            [clojure.test :refer :all]
-            [ring.util.io :refer [string-input-stream]])
+(ns channel.upload.temp-file-store-test
+  (:require
+   [channel.upload.temp-file-store :refer [temp-file-store]]
+   [clojure.test :refer :all]
+   [ring.util.io :refer [string-input-stream]])
   (:import [org.apache.commons.io FilenameUtils]))
 
 
