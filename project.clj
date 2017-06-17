@@ -23,6 +23,7 @@
                  [ring/ring-core "1.6.1"]
                  [ring/ring-defaults "0.3.0"]
                  [selmer "1.10.7"]
+                 [migratus "0.9.5"]
                  ;; media files
                  [net.jthink/jaudiotagger "2.2.5"]
                  ;; helpful JVM utils
