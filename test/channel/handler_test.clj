@@ -2,13 +2,11 @@
   (:require
    [channel.handler :refer [app]]
    [clojure.test :refer :all]
-   [peridot.core :as mock]))
+   [ring.mock.request :as mock]))
 
 
 (deftest test-app
   (testing "not-found route"
-    (let [response (-> (mock/session (app))
-                       (mock/request "/invalid")
-                       :response)]
+    (let [response ((app) (mock/request :get "/invalid"))]
       (is (= 404 (:status response)))
       (is (= {:detail "Not found"} (:body response))))))
