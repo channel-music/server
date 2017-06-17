@@ -60,7 +60,9 @@
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.19.0"]]
 
                   :source-paths ["env/dev/clj"]
-                  :resource-paths ["env/dev/resources"]
+                  :resource-paths ["env/dev/resources"
+                                   ;; For when tests are run in the dev environment
+                                   "env/test/resources"]
                   :repl-options {:init-ns user}
                   :injections [(require 'pjstadig.humane-test-output)
                                (pjstadig.humane-test-output/activate!)]}

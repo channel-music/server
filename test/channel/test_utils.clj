@@ -15,7 +15,7 @@
 (defn test-resource
   "Fetch a file with the given `filename` from the test resources."
   [filename]
-  (let [path (str "test-data/" filename)]
+  (let [path (str "media/" filename)]
     (io/file (io/resource path))))
 
 
