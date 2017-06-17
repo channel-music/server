@@ -24,7 +24,11 @@
                  [ring/ring-defaults "0.3.0"]
                  [selmer "1.10.7"]
                  ;; media files
-                 [net.jthink/jaudiotagger "2.2.5"]]
+                 [net.jthink/jaudiotagger "2.2.5"]
+                 ;; helpful JVM utils
+                 [org.apache.commons/commons-io "1.3.2"]
+                 [org.apache.httpcomponents/httpmime "4.5.1"
+                  :exclusions [commons-logging]]]
 
   :min-lein-version "2.0.0"
 

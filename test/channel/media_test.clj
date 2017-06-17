@@ -1,16 +1,11 @@
 (ns channel.media-test
   (:require
+   [channel.test-utils :refer [test-resource]]
    [channel.media :as media]
-   [clojure.java.io :as io]
    [clojure.test :refer :all]))
 
 
 (def supported-formats ["mp3" "wav" "ogg" "flac"])
-
-
-(defn test-resource [filename]
-  (let [url (io/resource (str "test-data/" filename))]
-    (io/file (.getPath url))))
 
 
 (deftest parse-media-file-test
