@@ -26,9 +26,7 @@
                  ;; media files
                  [net.jthink/jaudiotagger "2.2.5"]
                  ;; helpful JVM utils
-                 [org.apache.commons/commons-io "1.3.2"]
-                 [org.apache.httpcomponents/httpmime "4.5.1"
-                  :exclusions [commons-logging]]]
+                 [org.apache.commons/commons-io "1.3.2"]]
 
   :min-lein-version "2.0.0"
 
@@ -55,7 +53,10 @@
    :project/dev  {:dependencies [[prone "1.1.4"]
                                  [ring/ring-mock "0.3.0"]
                                  [ring/ring-devel "1.6.1"]
-                                 [pjstadig/humane-test-output "0.8.2"]]
+                                 [pjstadig/humane-test-output "0.8.2"]
+                                 ;; For multipart
+                                 [org.apache.httpcomponents/httpmime "4.5.1"
+                                  :exclusions [commons-logging]]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.19.0"]]
 
                   :source-paths ["env/dev/clj"]
