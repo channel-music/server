@@ -34,6 +34,12 @@
       (assoc :id (uuid))))
 
 
+(defn not-found
+  "Sets request status to 404 and adds a default message."
+  []
+  (response/not-found {:detail "Not found"}))
+
+
 (defapi service-routes
   {:swagger {:ui "/swagger-ui"
              :spec "/swagger.json"
@@ -68,7 +74,7 @@
         :return Song
         (if-let [song (get @songs id)]
           (response/ok song)
-          (response/not-found {:detail "Not found"})))
+          (not-found)))
 
       (PUT "/" [id]
         :summary "Replace the given song's data"
@@ -78,10 +84,13 @@
           (let [new-song (merge old-song new-song)]
             (swap! songs assoc id new-song)
             (response/ok new-song))
-          (response/not-found {:detail "Not found"})))
+          (not-found)))
 
       (DELETE "/" [id]
         :summary "Remove a specific song"
         :return nil
-        (swap! songs dissoc id)
-        (response/no-content)))))
+        (if-let [song (get @songs id)]
+          (do
+            (swap! songs dissoc id)
+            (response/no-content))
+          (not-found))))))

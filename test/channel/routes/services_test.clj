@@ -39,15 +39,24 @@
           (let [body (json-str->map (:body response))]
             (is (= new-song (select-keys body (keys new-song)))))))
 
+      (testing "returns not found when replacing a song with an invalid ID"
+        (let [response ((app) (-> (mock/request :put "/songs/invalid")
+                                  (mock/content-type "application/json")
+                                  (mock/body (map->json-str {:title "Give me a 404!",
+                                                             :album "Testing & Stuff"
+                                                             :artist "Me and I"}))))]
+          (is (= 404 (:status response)))
+          (is (= {:detail "Not found"} (json-str->map (:body response))))))
+
       (testing "remove a song with an ID"
         (let [response ((app) (mock/request :delete "/songs/abcde"))]
           (is (= 204 (:status response))
               (= nil (:body response)))))
 
-      (testing "does nothing when passed an invalid ID"
+      (testing "returns not found when passed an invalid ID"
         (let [response ((app) (mock/request :delete "/songs/invalid"))]
-          (is (= 204 (:status response))
-              (= nil (:body response)))))
+          (is (= 404 (:status response)))
+          (is (= {:detail "Not found"} (json-str->map (:body response))))))
 
       ;; TODO: Its currently too much effort to test using actual multipart files.
       ;; TODO: Move this to a integration-tests
