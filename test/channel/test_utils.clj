@@ -19,10 +19,16 @@
     (io/file (io/resource path))))
 
 
-(defn parse-body
-  "Parse a string (or input string) to a clojure object."
-  [body]
-  (cheshire/parse-string (slurp body) true))
+(defn json-str->map
+  "Parse a string (or input string) to a clojure map."
+  [str]
+  (cheshire/parse-string (slurp str) true))
+
+
+(defn map->json-str
+  "Convert a clojure map to a JSON string."
+  [map]
+  (cheshire/generate-string map))
 
 
 ;;

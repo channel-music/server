@@ -10,17 +10,28 @@
    [schema.core :as s]))
 
 
+;; Temporary ID generation
+(defn uuid []
+  (str (java.util.UUID/randomUUID)))
+
+
 (s/defschema Song
-  {:title s/Str
-   :album s/Str
+  {:id     s/Str
+   :title  s/Str
+   :album  s/Str
    :artist s/Str})
 
 
-(def songs (atom []))
+(s/defschema UpdatedSong (dissoc Song :id))
+
+
+(def songs (atom {}))
 
 
 (defn metadata->song [metadata]
-  (select-keys metadata [:title :album :artist]))
+  (-> metadata
+      (select-keys [:title :album :artist])
+      (assoc :id (uuid))))
 
 
 (defapi service-routes
@@ -35,9 +46,10 @@
     :multipart-params [file :- api.upload/TempFileUpload]
     :middleware [upload.middleware/wrap-multipart-params]
     (try
-      (let [metadata (media/parse-media-file (:tempfile file))]
-        (swap! songs conj (metadata->song metadata))
-        (response/created "/songs/1"))
+      (let [metadata (media/parse-media-file (:tempfile file))
+            new-song (metadata->song metadata)]
+        (swap! songs assoc (:id new-song) new-song)
+        (response/created (format "/songs/%s" (:id new-song))))
       (catch Exception e
         (io/delete-file (:tempfile file)) ;; cleanup
         (response/bad-request {:detail (.getMessage e), :type (:type (ex-data e))}))))
@@ -48,4 +60,28 @@
     (GET "/" []
       :summary "Fetch all songs."
       :return [Song]
-      (response/ok @songs))))
+      (response/ok (vals @songs)))
+
+    (context "/:id" []
+      (GET "/" [id]
+        :summary "Fetch a specific song"
+        :return Song
+        (if-let [song (get @songs id)]
+          (response/ok song)
+          (response/not-found {:detail "Not found"})))
+
+      (PUT "/" [id]
+        :summary "Replace the given song's data"
+        :body [new-song UpdatedSong]
+        :return Song
+        (if-let [old-song (get @songs id)]
+          (let [new-song (merge old-song new-song)]
+            (swap! songs assoc id new-song)
+            (response/ok new-song))
+          (response/not-found {:detail "Not found"})))
+
+      (DELETE "/" [id]
+        :summary "Remove a specific song"
+        :return nil
+        (swap! songs dissoc id)
+        (response/no-content)))))
