@@ -39,7 +39,10 @@
   :main ^:skip-aot channel.core
 
   :plugins [[lein-cprop "1.0.3"]
-            [lein-immutant "2.1.0"]]
+            [lein-immutant "2.1.0"]
+            [migratus-lein "0.4.9"]]
+
+  :migratus {:store :database :db ~(get (System/getenv) "DATABASE_URL")}
 
   :profiles
   {:uberjar {:omit-source true
