@@ -5,3 +5,6 @@ profiles.clj
 .lein-env
 .lein-failures
 .nrepl-port
+
+# Uploaded media files
+media/
