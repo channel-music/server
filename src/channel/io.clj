@@ -3,6 +3,12 @@
   (:import (java.nio.file Paths Path)))
 
 
+(defn tmpdir
+  "Returns the temporary directory used by the operating system."
+  []
+  (System/getProperty "java.io.tmpdir"))
+
+
 (defn path-join
   "Returns a string of all file paths joined together."
   [& paths]
