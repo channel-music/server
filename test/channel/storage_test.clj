@@ -57,6 +57,11 @@
         (storage/store fs-storage (StringReader. "test") "test.txt")
         (is (.exists (io/file (.root-path fs-storage) "test.txt"))))
 
+      (testing "throws when storing a file that already exists"
+        (storage/store fs-storage (StringReader. "test") "duplicates.txt")
+        (is (thrown? ExceptionInfo
+                     (storage/store fs-storage (StringReader. "test") "duplicates.txt"))))
+
       (testing "retrieves an already existing file"
         (let [path (channel.io/path-join (.root-path fs-storage) "existing.txt")]
           (spit path "testing, 1, 2")

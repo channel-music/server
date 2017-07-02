@@ -11,7 +11,8 @@
 
   (store [this in-stream filename]
     "Copy a stream to storage, using `filename` as the unique identifier.
-Returns the path relative to the storage location.")
+Returns the path relative to the storage location. Throws an exception
+if the file already exists.")
 
   (retrieve [this filename]
     "Fetch a stream from storage using its relative file name.
@@ -37,6 +38,8 @@ Returns `true` on success and `false` otherwise."))
 
   (store [this in-stream filename]
     (let [new-file (io/file root-path filename)]
+      (when (.exists new-file)
+        (throw (ex-info "Object already exists in storage" {:got new-file})))
       (io/copy in-stream new-file)
       (path-relative-to-root root-path (.getPath new-file))))
 
