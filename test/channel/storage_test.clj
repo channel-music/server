@@ -63,9 +63,17 @@
           (is (= "testing, 1, 2" (slurp (storage/retrieve fs-storage "existing.txt"))))
           (io/delete-file path)))
 
-      (testing "throws when file doesn't exist"
-        (is (thrown? FileNotFoundException
-                     (storage/retrieve fs-storage "not-there.png"))))))
+      (testing "throws when retrieving a file that doesn't exist"
+        (is (nil? (storage/retrieve fs-storage "not-there.png"))))
+
+      (testing "disposes an existing file"
+        (let [path (channel.io/path-join (.root-path fs-storage) "delete-me.txt")]
+          (spit path "to be deleted!")
+          (is (storage/dispose fs-storage path))
+          (is (not (.exists (io/file path))))))
+
+      (testing "returns false when disposing a non-existant file"
+        (is (not (storage/dispose fs-storage "i-dont-exist.png"))))))
 
   (let [fs-storage (FileSystemStorage. "invalid-dir")]
     (testing "fails if storage root doesn't exist"
