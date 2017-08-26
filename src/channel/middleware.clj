@@ -1,7 +1,6 @@
 (ns channel.middleware
   (:require
    [channel.env :refer [defaults]]
-   [channel.config :refer [env]]
    [ring.middleware.defaults :refer [api-defaults wrap-defaults]]))
 
 
