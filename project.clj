@@ -23,7 +23,7 @@
                  [ring/ring-core "1.6.1"]
                  [ring/ring-defaults "0.3.0"]
                  [selmer "1.10.7"]
-                 [migratus "0.9.5"]
+                 [migratus "0.9.9"]
                  ;; media files
                  [net.jthink/jaudiotagger "2.2.5"]
                  ;; helpful JVM utils
@@ -40,7 +40,7 @@
 
   :plugins [[lein-cprop "1.0.3"]
             [lein-immutant "2.1.0"]
-            [migratus-lein "0.4.9"]]
+            [migratus-lein "0.5.1"]]
 
   :migratus {:store :database :db ~(get (System/getenv) "DATABASE_URL")}
 
