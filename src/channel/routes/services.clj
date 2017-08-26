@@ -6,6 +6,7 @@
    [channel.upload.middleware :as upload.middleware]
    [compojure.api.sweet :refer :all]
    [compojure.api.upload :as api.upload]
+   [clojure.java.io :as io]
    [clojure.tools.logging :as log]
    [ring.util.http-response :as response]
    [schema.core :as s]))
