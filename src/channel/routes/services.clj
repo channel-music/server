@@ -1,6 +1,8 @@
 (ns channel.routes.services
   (:require
+   [channel.io :as cio]
    [channel.media :as media]
+   [channel.storage :as storage :refer [*storage*]]
    [channel.upload.middleware :as upload.middleware]
    [compojure.api.sweet :refer :all]
    [compojure.api.upload :as api.upload]
@@ -28,10 +30,14 @@
 (def songs (atom {}))
 
 
-(defn metadata->song [metadata]
-  (-> metadata
-      (select-keys [:title :album :artist])
-      (assoc :id (uuid))))
+;; TODO: Rename function
+(defn make-song [metadata file]
+  (try
+    (let [filename (str (uuid) "." (cio/file-extension file))
+          storage-path (storage/store! *storage* file filename)]
+      (assoc metadata :id (uuid) :file storage-path))
+    (catch clojure.lang.ExceptionInfo _ ;; UUID collision, very rare
+      (make-song metadata file))))
 
 
 (defn not-found
@@ -53,7 +59,7 @@
     :middleware [upload.middleware/wrap-multipart-params]
     (try
       (let [metadata (media/parse-media-file (:tempfile file))
-            new-song (metadata->song metadata)]
+            new-song (make-song metadata (:tempfile file))]
         (swap! songs assoc (:id new-song) new-song)
         (response/created (format "/songs/%s" (:id new-song))))
       (catch Exception e

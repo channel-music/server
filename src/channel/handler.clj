@@ -17,6 +17,7 @@
 (def app-routes
   (routes
     #'service-routes
+    (route/files "media" {:root "media"}) ;; TODO: load from config
     (route/not-found
       (response/not-found {:detail "Not found"}))))
 
