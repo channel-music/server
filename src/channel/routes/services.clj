@@ -30,7 +30,6 @@
 (def songs (atom {}))
 
 
-;; TODO: Rename function
 (defn make-song [metadata file]
   (try
     (let [filename (str (uuid) "." (cio/file-extension file))

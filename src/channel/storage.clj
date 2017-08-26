@@ -1,5 +1,6 @@
 (ns channel.storage
   (:require
+   [channel.config :refer [env]]
    [channel.io :refer [str->path]]
    [clojure.java.io :as io]
    [clojure.string :as string]
@@ -59,5 +60,4 @@ Returns `true` on success and `false` otherwise."))
 
 
 (defstate ^:dynamic *storage*
-  ;; FIXME: get from env
-  :start (FileSystemStorage. "media"))
+  :start (FileSystemStorage. (get env :media-path "media")))
