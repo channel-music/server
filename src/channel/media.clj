@@ -6,7 +6,8 @@
 
 
 (defn parse-unsigned-int
-  "Parse a track number. Returns `nil` on failure."
+  "Parse a string in to an integer, but only if it represents an
+  unsigned number. Returns `nil` on failure."
   [track-number]
   (try
     (Integer/parseUnsignedInt track-number)
