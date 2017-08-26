@@ -2,23 +2,24 @@
   (:require
    [channel.io :refer [str->path]]
    [clojure.java.io :as io]
-   [clojure.string :as string])
+   [clojure.string :as string]
+   [mount.core :refer [defstate]])
   (:import (java.io FileNotFoundException IOException)))
 
 
 (defprotocol Storable
   "Represents a way of persistently storing objects."
 
-  (store [this in-stream name]
+  (store! [this in-stream name]
     "Copy a stream to storage, using `name` as the unique identifier.
 Returns the path relative to the storage location. Throws an exception
 if the file already exists.")
 
-  (retrieve [this name]
+  (retrieve! [this name]
     "Fetch a stream from storage using its name.
 Returns `nil` if the object does not exist.")
 
-  (dispose [this name]
+  (dispose! [this name]
     "Remove object from storage using its name.
 Returns `true` on success and `false` otherwise."))
 
@@ -36,21 +37,27 @@ Returns `true` on success and `false` otherwise."))
 (deftype FileSystemStorage [root-path]
   Storable
 
-  (store [this in-stream filename]
+  (store! [this in-stream filename]
+    ;; TODO: create dir if it doesn't exist
     (let [new-file (io/file root-path filename)]
       (when (.exists new-file)
         (throw (ex-info "Object already exists in storage" {:got new-file})))
       (io/copy in-stream new-file)
       (path-relative-to-root root-path (.getPath new-file))))
 
-  (retrieve [this filename]
+  (retrieve! [this filename]
     (try
       (io/input-stream (io/file root-path filename))
       (catch FileNotFoundException e
         nil)))
 
-  (dispose [this filename]
+  (dispose! [this filename]
     (try
       (io/delete-file filename)
       (catch IOException e
         false))))
+
+
+(defstate ^:dynamic *storage*
+  ;; FIXME: get from env
+  :start (FileSystemStorage. "media"))

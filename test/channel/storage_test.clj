@@ -46,41 +46,41 @@
     (testing "with mocked IO procedures"
       (testing "returns the relative file path when storing"
         (with-redefs [io/copy (constantly nil)]
-          (is (= "test.txt" (storage/store fs-storage (StringReader. "test") "test.txt")))))
+          (is (= "test.txt" (storage/store! fs-storage (StringReader. "test") "test.txt")))))
 
       (testing "returns the file contents when retrieving"
         (with-redefs [io/input-stream (constantly (StringReader. "test"))]
-          (is (= "test" (slurp (storage/retrieve fs-storage "test.txt")))))))
+          (is (= "test" (slurp (storage/retrieve! fs-storage "test.txt")))))))
 
     (testing "with real filesystem changes"
-      (testing "creates a file when using store"
-        (storage/store fs-storage (StringReader. "test") "test.txt")
+      (testing "creates a file when using store!"
+        (storage/store! fs-storage (StringReader. "test") "test.txt")
         (is (.exists (io/file (.root-path fs-storage) "test.txt"))))
 
       (testing "throws when storing a file that already exists"
-        (storage/store fs-storage (StringReader. "test") "duplicates.txt")
+        (storage/store! fs-storage (StringReader. "test") "duplicates.txt")
         (is (thrown? ExceptionInfo
-                     (storage/store fs-storage (StringReader. "test") "duplicates.txt"))))
+                     (storage/store! fs-storage (StringReader. "test") "duplicates.txt"))))
 
       (testing "retrieves an already existing file"
         (let [path (channel.io/path-join (.root-path fs-storage) "existing.txt")]
           (spit path "testing, 1, 2")
-          (is (= "testing, 1, 2" (slurp (storage/retrieve fs-storage "existing.txt"))))
+          (is (= "testing, 1, 2" (slurp (storage/retrieve! fs-storage "existing.txt"))))
           (io/delete-file path)))
 
       (testing "throws when retrieving a file that doesn't exist"
-        (is (nil? (storage/retrieve fs-storage "not-there.png"))))
+        (is (nil? (storage/retrieve! fs-storage "not-there.png"))))
 
       (testing "disposes an existing file"
         (let [path (channel.io/path-join (.root-path fs-storage) "delete-me.txt")]
           (spit path "to be deleted!")
-          (is (storage/dispose fs-storage path))
+          (is (storage/dispose! fs-storage path))
           (is (not (.exists (io/file path))))))
 
       (testing "returns false when disposing a non-existant file"
-        (is (not (storage/dispose fs-storage "i-dont-exist.png"))))))
+        (is (not (storage/dispose! fs-storage "i-dont-exist.png"))))))
 
   (let [fs-storage (FileSystemStorage. "invalid-dir")]
     (testing "fails if storage root doesn't exist"
       (is (thrown? FileNotFoundException
-                   (storage/store fs-storage (StringReader. "test") "test.txt"))))))
+                   (storage/store! fs-storage (StringReader. "test") "test.txt"))))))
