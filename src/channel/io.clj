@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io])
   (:import
    (java.nio.file Paths Path)
-   (org.apache.commons.io FileUtils)))
+   (org.apache.commons.io FileUtils FilenameUtils)))
 
 
 (defn tmpdir
@@ -28,7 +28,7 @@
   "Delete a file or directory. If the directory is not empty it
   will be deleted regardless. Returns `true` on success and `false`
   on failure."
-  [file]
+  [^java.io.File file]
   (if (.isDirectory file)
     (try
       (FileUtils/deleteDirectory file)
@@ -36,3 +36,10 @@
       (catch IllegalArgumentException e
         false))
     (.delete file)))
+
+
+(defn file-extension
+  "Returns the extension of the given file or `nil` if it doesn't have one."
+  [^java.io.File file]
+  (let [ext (FilenameUtils/getExtension (.getPath file))]
+    (if (empty? ext) nil ext)))

@@ -1,37 +1,37 @@
 (ns channel.io-test
   (:require
-   [channel.io :as io]
+   [channel.io :as cio]
    [clojure.java.io]
    [clojure.test :refer :all]))
 
 
 (deftest test-path-join
   (testing "with plain paths"
-    (is (= "a/b/c.txt" (io/path-join "a" "b" "c.txt"))))
+    (is (= "a/b/c.txt" (cio/path-join "a" "b" "c.txt"))))
 
   (testing "with trailing slashes"
-    (is (= "a/b/c.txt" (io/path-join "a/" "b/" "c.txt"))))
+    (is (= "a/b/c.txt" (cio/path-join "a/" "b/" "c.txt"))))
 
   (testing "with only one path"
-    (is (= "test.txt" (io/path-join "test.txt"))))
+    (is (= "test.txt" (cio/path-join "test.txt"))))
 
   (testing "when no paths are passed"
-    (is (thrown? AssertionError (io/path-join)))))
+    (is (thrown? AssertionError (cio/path-join)))))
 
 
 (deftest test-str->path
   (testing "with plain file"
-    (let [path (io/str->path "project.clj")]
+    (let [path (cio/str->path "project.clj")]
       (is (instance? java.nio.file.Path path))
       (is (= "project.clj" (.toString (.getFileName path))))))
 
   (testing "with directory"
-    (let [path (io/str->path "src")]
+    (let [path (cio/str->path "src")]
       (is (instance? java.nio.file.Path path))
       (is (= "src" (.toString (.getFileName path))))))
 
   (testing "with trailing slashes"
-    (let [path (io/str->path "src/")]
+    (let [path (cio/str->path "src/")]
       (is (instance? java.nio.file.Path path))
       (is (= "src" (.toString (.getFileName path)))))))
 
@@ -41,23 +41,34 @@
     (spit "plain-file.txt" "abcde")
     (let [f (clojure.java.io/file "plain-file.txt")]
       (is (.exists f))
-      (is (io/delete f))
+      (is (cio/delete f))
       (is (not (.exists f)))))
 
   (testing "with an empty directory"
     (let [dir (clojure.java.io/file "test-dir")]
       (.mkdir dir)
       (is (.exists dir))
-      (is (io/delete dir))
+      (is (cio/delete dir))
       (is (not (.exists dir)))))
 
   (testing "with a non-empty directory"
     (let [dir (clojure.java.io/file "test-dir")]
       (.mkdir dir)
-      (spit (io/path-join "test-dir" "file1.txt") "file1")
-      (spit (io/path-join "test-dir" "file2.txt") "file2")
-      (is (io/delete dir))
+      (spit (cio/path-join "test-dir" "file1.txt") "file1")
+      (spit (cio/path-join "test-dir" "file2.txt") "file2")
+      (is (cio/delete dir))
       (is (not (.exists dir)))))
 
   (testing "with a non-existent directory"
-    (is (not (io/delete (clojure.java.io/file "doesnt-exist"))))))
+    (is (not (cio/delete (clojure.java.io/file "doesnt-exist"))))))
+
+
+(deftest test-file-extension
+  (testing "file with no extension"
+    (is (= nil (cio/file-extension (clojure.java.io/file "plain-file")))))
+
+  (testing "file with standard extension"
+    (is (= "txt" (cio/file-extension (clojure.java.io/file "plain-file.txt")))))
+
+  (testing "malformed file"
+    (is (= nil (cio/file-extension (clojure.java.io/file "plain-file."))))))
