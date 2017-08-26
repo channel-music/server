@@ -1,9 +1,0 @@
-dist: trusty
-language: clojure
-jdk:
-  - oraclejdk8
-  - openjdk8
-
-cache:
- directories:
-   - $HOME/.m2

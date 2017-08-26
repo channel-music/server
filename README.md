@@ -1,6 +1,6 @@
 # channel
 
-[![Build Status](https://travis-ci.org/kalouantonis/channel.svg?branch=master)](https://travis-ci.org/kalouantonis/channel)
+[![CircleCI](https://circleci.com/gh/kalouantonis/channel.svg?style=svg)](https://circleci.com/gh/kalouantonis/channel)
 
 A self-hosted music streaming application.
 
