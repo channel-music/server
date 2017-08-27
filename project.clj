@@ -23,6 +23,8 @@
                  [ring/ring-core "1.6.1"]
                  [ring/ring-defaults "0.3.0"]
                  [selmer "1.10.7"]
+                 ;; Database
+                 [org.postgresql/postgresql "42.1.4"]
                  [migratus "0.9.9"]
                  ;; media files
                  [net.jthink/jaudiotagger "2.2.5"]
