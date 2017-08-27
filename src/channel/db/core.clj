@@ -1,8 +1,7 @@
-(ns channel.db
+(ns channel.db.core
   (:require
    [channel.config :refer [env]]
    [hikari-cp.core :as hikari]
-   [hugsql.core :as hugsql]
    [mount.core :refer [defstate]]
    [to-jdbc-uri.core :refer [to-jdbc-uri]]))
 
@@ -15,4 +14,3 @@
            (hikari/close-datasource ds)))
 
 
-(hugsql/def-db-fns "sql/queries.sql")
