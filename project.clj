@@ -24,8 +24,12 @@
                  [ring/ring-defaults "0.3.0"]
                  [selmer "1.10.7"]
                  ;; Database
+                 [hikari-cp "1.7.6"]
+                 [to-jdbc-uri "0.3.0"]
+                 [org.clojure/java.jdbc "0.7.0"]
                  [org.postgresql/postgresql "42.1.4"]
                  [migratus "0.9.9"]
+                 [com.layerware/hugsql "0.4.7"]
                  ;; media files
                  [net.jthink/jaudiotagger "2.2.5"]
                  ;; helpful JVM utils
