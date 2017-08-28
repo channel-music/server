@@ -11,15 +11,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-fixtures
   :once
+  ;; Start DB
   (fn [test-fn]
     (mount.core/start
      #'channel.config/env
      #'channel.db.core/*db*)
-    (test-fn)))
-
-
-(use-fixtures
-  :once
+    (test-fn))
+  ;; Setup transactions
   (fn [test-fn]
     (jdbc/with-db-transaction [conn *db*]
       (jdbc/db-set-rollback-only! conn)
@@ -30,8 +28,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 (deftest test-songs
   (testing "create-song!"
     (is (number? (:id (songs/create-song! *db*
