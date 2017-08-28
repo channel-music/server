@@ -5,24 +5,24 @@
 
   :repositories [["jaudiotagger" "https://dl.bintray.com/ijabz/maven"]]
 
-  :dependencies [[clj-time "0.13.0"]
-                 [compojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/tools.cli "0.3.5"]
+                 [org.clojure/tools.logging "0.3.1"]
+                 [clj-time "0.13.0"]
                  [cheshire "5.7.1"]
                  [cprop "0.1.10"]
                  [funcool/struct "1.0.0"]
+                 [markdown-clj "0.9.99"]
+                 [mount "0.1.11"]
+                 ;; Web
+                 [compojure "1.6.0"]
                  [luminus-immutant "0.2.3"]
                  [luminus-nrepl "0.1.4"]
                  [luminus/ring-ttl-session "0.3.2"]
-                 [markdown-clj "0.9.99"]
                  [metosin/compojure-api "1.1.10"]
                  [metosin/ring-http-response "0.9.0"]
-                 [mount "0.1.11"]
-                 [org.clojure/clojure "1.8.0"]
-                 [org.clojure/tools.cli "0.3.5"]
-                 [org.clojure/tools.logging "0.3.1"]
                  [ring/ring-core "1.6.1"]
                  [ring/ring-defaults "0.3.0"]
-                 [selmer "1.10.7"]
                  ;; Database
                  [hikari-cp "1.7.6"]
                  [to-jdbc-uri "0.3.0"]
@@ -60,13 +60,13 @@
    :dev           [:project/dev :profiles/dev]
    :test          [:project/dev :project/test :profiles/test]
 
-   :project/dev  {:dependencies [[prone "1.1.4"]
-                                 [ring/ring-mock "0.3.0"]
-                                 [ring/ring-devel "1.6.1"]
-                                 [pjstadig/humane-test-output "0.8.2"]
-                                 ;; For multipart
+   :project/dev  {:dependencies [;; For multipart
                                  [org.apache.httpcomponents/httpmime "4.5.1"
-                                  :exclusions [commons-logging]]]
+                                  :exclusions [commons-logging]]
+                                 [prone "1.1.4"]
+                                 [pjstadig/humane-test-output "0.8.2"]
+                                 [ring/ring-mock "0.3.0"]
+                                 [ring/ring-devel "1.6.1"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.19.0"]]
 
                   :source-paths ["env/dev/clj"]
