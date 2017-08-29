@@ -24,7 +24,7 @@
    :artist       (.getFirst audio-tag FieldKey/ARTIST)
    :genre        (.getFirst audio-tag FieldKey/GENRE)
    :year         (.getFirst audio-tag FieldKey/YEAR)
-   :track-number (parse-unsigned-int
+   :track        (parse-unsigned-int
                   (.getFirst audio-tag FieldKey/TRACK))
    :total-tracks (parse-unsigned-int
                   (.getFirst audio-tag FieldKey/TRACK_TOTAL))})

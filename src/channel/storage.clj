@@ -1,7 +1,7 @@
 (ns channel.storage
   (:require
    [channel.config :refer [env]]
-   [channel.io :refer [str->path]]
+   [channel.io :refer [str->path file-extension]]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [mount.core :refer [defstate]])
@@ -35,6 +35,13 @@ Returns `true` on success and `false` otherwise."))
             {:root root, :relative relative}))))
 
 
+;; TODO: test
+(defn generate-filename
+  "Generate a filename for the given `file`, preserving the extension."
+  [file]
+  (str (java.util.UUID/randomUUID) "." (file-extension file)))
+
+
 (deftype FileSystemStorage [root-path]
   Storable
 
@@ -42,7 +49,8 @@ Returns `true` on success and `false` otherwise."))
     ;; TODO: create dir if it doesn't exist
     (let [new-file (io/file root-path filename)]
       (when (.exists new-file)
-        (throw (ex-info "Object already exists in storage" {:got new-file})))
+        (throw (ex-info "Object already exists in storage"
+                        {:type :duplicate-object})))
       (io/copy in-stream new-file)
       (path-relative-to-root root-path (.getPath new-file))))
 

@@ -19,7 +19,7 @@
                          :artist "Antonis Kalou"
                          :genre  "Testing"
                          :year "2017"
-                         :track-number 1
+                         :track 1
                          :total-tracks 1})))))
 
   (testing "throws exception when using invalid file format"

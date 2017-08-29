@@ -1,5 +1,7 @@
 (ns channel.routes.services
   (:require
+   [channel.db.core :refer [*db*]]
+   [channel.db.songs :as db.songs]
    [channel.io :as cio]
    [channel.media :as media]
    [channel.storage :as storage :refer [*storage*]]
@@ -12,31 +14,35 @@
    [schema.core :as s]))
 
 
-;; Temporary ID generation
-(defn uuid []
-  (str (java.util.UUID/randomUUID)))
-
-
 (s/defschema Song
-  {:id     s/Str
+  {:id     s/Int
    :title  s/Str
    :album  s/Str
-   :artist s/Str})
+   :artist s/Str
+   :genre  s/Str
+   :track  (s/maybe s/Int)
+   :file    s/Str})
 
 
-(s/defschema UpdatedSong (dissoc Song :id))
+(s/defschema UpdatedSong (dissoc Song :id :file))
 
 
-(def songs (atom {}))
+(defn store-file! [file]
+  (try
+    (let [filename (storage/generate-filename file)]
+      (storage/store! *storage* file filename))
+    (catch clojure.lang.ExceptionInfo e
+      (case (:type (ex-data e))
+        ;; UUID collision, very rare
+        :duplicate-object (store-file! file)
+        (throw e)))))
 
 
 (defn make-song [metadata file]
-  (try
-    (let [filename (str (uuid) "." (cio/file-extension file))
-          storage-path (storage/store! *storage* file filename)]
-      (assoc metadata :id (uuid) :file storage-path))
-    (catch clojure.lang.ExceptionInfo _ ;; UUID collision, very rare
-      (make-song metadata file))))
+  (let [song (assoc metadata :file (store-file! file))]
+    (if (db.songs/song-exists? *db* song)
+      (throw (ex-info "Song already exists" {:type :duplicate-record}))
+      (merge song (db.songs/create-song! *db* song)))))
 
 
 (defn not-found
@@ -59,9 +65,8 @@
     (try
       (let [metadata (media/parse-media-file (:tempfile file))
             new-song (make-song metadata (:tempfile file))]
-        (swap! songs assoc (:id new-song) new-song)
-        (response/created (format "/songs/%s" (:id new-song))))
-      (catch Exception e
+        (response/created (format "/songs/%d" (:id new-song))))
+      (catch clojure.lang.ExceptionInfo e
         (io/delete-file (:tempfile file)) ;; cleanup
         (response/bad-request {:detail (.getMessage e), :type (:type (ex-data e))}))))
 
@@ -71,31 +76,34 @@
     (GET "/" []
       :summary "Fetch all songs."
       :return [Song]
-      (response/ok (vals @songs)))
+      (response/ok (db.songs/all-songs *db*)))
 
     (context "/:id" []
-      (GET "/" [id]
+      (GET "/" []
+        :path-params [id :- Long]
         :summary "Fetch a specific song"
         :return Song
-        (if-let [song (get @songs id)]
+        (if-let [song (db.songs/song-by-id *db* {:id id})]
           (response/ok song)
           (not-found)))
 
-      (PUT "/" [id]
+      (PUT "/" []
+        :path-params [id :- Long]
         :summary "Replace the given song's data"
         :body [new-song UpdatedSong]
         :return Song
-        (if-let [old-song (get @songs id)]
+        (if-let [old-song (db.songs/song-by-id *db* {:id id})]
           (let [new-song (merge old-song new-song)]
-            (swap! songs assoc id new-song)
+            (db.songs/update-song! *db* new-song)
             (response/ok new-song))
           (not-found)))
 
-      (DELETE "/" [id]
+      (DELETE "/" []
+        :path-params [id :- Long]
         :summary "Remove a specific song"
         :return nil
-        (if-let [song (get @songs id)]
+        (if-let [song (db.songs/song-by-id *db* {:id id})]
           (do
-            (swap! songs dissoc id)
+            (db.songs/delete-song! *db* {:id id})
             (response/no-content))
           (not-found))))))

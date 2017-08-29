@@ -5,7 +5,7 @@ CREATE TABLE song
  artist VARCHAR(100),
  album  VARCHAR(100),
  genre  VARCHAR(30),
- track  INTEGER      NOT NULL,
+ track  SMALLINT,
  file   VARCHAR(300) NOT NULL);
 
 
