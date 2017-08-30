@@ -77,3 +77,12 @@
     (.close out)
     (.toString out)))
 
+
+(defn make-mount-fixture
+  "Returns a fixture function that starts the given mount `services`
+  and stops them after the tests have been run."
+  [& services]
+  (fn [test-fn]
+    (apply mount.core/start services)
+    (test-fn)
+    (apply mount.core/stop services)))

@@ -7,7 +7,7 @@
    [channel.test-utils
     :refer [test-resource json-str->map map->json-str]]
    [channel.routes.services :as services]
-   [channel.test-utils :refer [test-resource]]
+   [channel.test-utils :refer [test-resource make-mount-fixture]]
    [clojure.java.io :as io]
    [clojure.java.jdbc :as jdbc]
    [clojure.test :refer :all]
@@ -17,15 +17,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
 ;; FIXME: duplicated with channel.db.songs-test
 (use-fixtures
   :each
   ;; Start DB
-  (fn [test-fn]
-    (mount.core/start
-     #'channel.config/env
-     #'channel.db.core/*db*)
-    (test-fn))
+  (make-mount-fixture
+   #'channel.config/env
+   #'channel.db.core/*db*)
   ;; Setup transactions
   (fn [test-fn]
     (jdbc/with-db-transaction [conn *db*]
@@ -33,11 +34,17 @@
       (binding [*db* conn] ;; rebind to use transactional conn
         (test-fn)))))
 
+(use-fixtures
+  :once
+  (make-mount-fixture #'channel.storage/*storage*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest test-make-song
+  ;; Start storage service
+  (mount.core/start #'channel.storage/*storage*)
+
   (let [metadata {:title "Transatlantic",
                   :album "Apricot Morning",
                   :artist "Quantic"

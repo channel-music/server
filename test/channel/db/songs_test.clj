@@ -3,6 +3,7 @@
    [channel.config]
    [channel.db.core :refer [*db*]]
    [channel.db.songs :as songs]
+   [channel.test-utils :refer [make-mount-fixture]]
    [clojure.java.jdbc :as jdbc]
    [clojure.test :refer :all]
    [mount.core]))
@@ -14,11 +15,9 @@
 (use-fixtures
   :each
   ;; Start DB
-  (fn [test-fn]
-    (mount.core/start
-     #'channel.config/env
-     #'channel.db.core/*db*)
-    (test-fn))
+  (make-mount-fixture
+   #'channel.config/env
+   #'channel.db.core/*db*)
   ;; Setup transactions
   (fn [test-fn]
     (jdbc/with-db-transaction [conn *db*]
