@@ -6,11 +6,13 @@
    [channel.handler :refer [app]]
    [channel.test-utils
     :refer [test-resource json-str->map map->json-str]]
-   [channel.routes.services]
+   [channel.routes.services :as services]
+   [channel.test-utils :refer [test-resource]]
+   [clojure.java.io :as io]
    [clojure.java.jdbc :as jdbc]
    [clojure.test :refer :all]
-   [mount.core]
-   [ring.mock.request :as mock]))
+   [ring.mock.request :as mock]
+   [mount.core]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Fixtures
@@ -35,6 +37,40 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(deftest test-make-song
+  (let [metadata {:title "Transatlantic",
+                  :album "Apricot Morning",
+                  :artist "Quantic"
+                  :genre "Triphop"
+                  :track 1}]
+    (testing "creates a new song if none exists"
+      (let [create-called? (atom false)]
+        (with-redefs [channel.db.songs/song-exists?
+                      (constantly nil)
+                      channel.db.songs/create-song!
+                      (fn [_ m]
+                        (reset! create-called? true)
+                        m)]
+          (let [song (services/make-song metadata (test-resource "test.ogg"))]
+            (is @create-called?)
+            (is (map? song))
+            (is (= metadata (select-keys song (keys metadata))))
+            (is (contains? song :file))))))
+
+    (testing "throws an exception if the song already exists"
+      (let [create-called? (atom false)]
+        (with-redefs [channel.db.songs/song-exists?
+                      (fn [_ m] m)
+                      channel.db.songs/create-song!
+                      (fn [_ m]
+                        (reset! create-called? true)
+                        m)]
+          (try
+            (services/make-song metadata (test-resource "test.ogg"))
+            (catch clojure.lang.ExceptionInfo e
+              (is (= :duplicate-record (:type (ex-data e)))))))))))
+
+
 (deftest services-test
   (let [songs (map #(merge (songs/create-song! *db* %) %)
                    [{:title "Transatlantic",
