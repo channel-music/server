@@ -48,7 +48,6 @@ Returns `true` on success and `false` otherwise."))
   Storable
 
   (store! [this in-stream filename]
-    ;; TODO: create dir if it doesn't exist
     (let [new-file (io/file root-path filename)]
       (when (.exists new-file)
         (throw (ex-info "Object already exists in storage"
@@ -70,4 +69,8 @@ Returns `true` on success and `false` otherwise."))
 
 
 (defstate ^:dynamic *storage*
-  :start (FileSystemStorage. (get env :media-path "media")))
+  :start
+  (let [root-dir (io/file (get env :media-path "media"))]
+    (when-not (.exists root-dir)
+      (.mkdir root-dir))
+    (FileSystemStorage. (.getPath root-dir))))
