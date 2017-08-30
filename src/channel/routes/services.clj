@@ -1,5 +1,6 @@
 (ns channel.routes.services
   (:require
+   [channel.config :refer [env]]
    [channel.db.core :refer [*db*]]
    [channel.db.songs :as db.songs]
    [channel.io :as cio]
@@ -52,6 +53,12 @@
       (merge song (db.songs/create-song! *db* song)))))
 
 
+(defn song-with-url [song]
+  (let [media-url (get env :media-url "media")]
+    ;; FIXME: join paths properly
+    (update song :file #(format "%s/%s" media-url %))))
+
+
 (defn not-found
   "Sets request status to 404 and adds a default message."
   []
@@ -83,7 +90,9 @@
     (GET "/" []
       :summary "Fetch all songs."
       :return [Song]
-      (response/ok (db.songs/all-songs *db*)))
+      (->> (db.songs/all-songs *db*)
+           (map song-with-url)
+           (response/ok)))
 
     (context "/:id" []
       (GET "/" []
@@ -91,7 +100,7 @@
         :summary "Fetch a specific song"
         :return Song
         (if-let [song (db.songs/song-by-id *db* {:id id})]
-          (response/ok song)
+          (response/ok (song-with-url song))
           (not-found)))
 
       (PUT "/" []
@@ -102,7 +111,7 @@
         (if-let [old-song (db.songs/song-by-id *db* {:id id})]
           (let [new-song (merge old-song new-song)]
             (db.songs/update-song! *db* new-song)
-            (response/ok new-song))
+            (response/ok (song-with-url new-song)))
           (not-found)))
 
       (DELETE "/" []

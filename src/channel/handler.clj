@@ -19,7 +19,7 @@
   (routes
     #'service-routes
     (route/files
-     (get env :media-url "media")
+     (str "/" (get env :media-url "media"))
      {:root (get env :media-path "media")})
     (route/not-found
       (response/not-found {:detail "Not found"}))))

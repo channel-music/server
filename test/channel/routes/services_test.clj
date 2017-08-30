@@ -78,6 +78,8 @@
               (is (= :duplicate-record (:type (ex-data e)))))))))))
 
 
+(deftest test-song-with-url)
+
 (deftest services-test
   (let [songs (map #(merge (songs/create-song! *db* %) %)
                    [{:title "Transatlantic",
@@ -94,7 +96,7 @@
         (is (= 200 (:status response)))
         (let [without-file (fn [songs]
                              (map #(dissoc % :file) songs))]
-          ;; DB may be poluted, so check subset isntead
+          ;; DB may be poluted, so check subset instead
           (is (clojure.set/subset?
                (set (without-file songs))
                (set (without-file (json-str->map (:body response)))))))))

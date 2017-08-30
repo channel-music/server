@@ -19,10 +19,10 @@
                  [luminus-immutant "0.2.3"]
                  [luminus-nrepl "0.1.4"]
                  [luminus/ring-ttl-session "0.3.2"]
-                 [metosin/compojure-api "1.1.10"]
+                 [metosin/compojure-api "1.1.11"]
                  [metosin/ring-http-response "0.9.0"]
-                 [ring/ring-core "1.6.1"]
-                 [ring/ring-defaults "0.3.0"]
+                 [ring/ring-core "1.6.2"]
+                 [ring/ring-defaults "0.3.1"]
                  ;; Database
                  [hikari-cp "1.7.6"]
                  [to-jdbc-uri "0.3.0"]
