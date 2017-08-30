@@ -27,6 +27,30 @@
     (is (thrown? ExceptionInfo (storage/path-relative-to-root "root" "a/b.wav")))))
 
 
+(defn- generate-filename-ext
+  "Returns the extension returned by calling `storage/generate-filename`."
+  [filename]
+  (-> (io/file filename)
+      (storage/generate-filename)
+      (clojure.string/split #"\.")
+      (second)))
+
+
+(deftest test-generate-filename
+  (testing "preserves file extension"
+    (is (= "txt" (generate-filename-ext "test.txt"))))
+
+  (testing "handles missing file extensions"
+    (is (nil? (generate-filename-ext "test"))))
+
+  (testing "generated filename is unique"
+    (let [file (io/file "test.txt")]
+      ;; There is a teeny tiny chance that this will fail,
+      ;; as sometimes there may be collisions
+      (is (not= (storage/generate-filename file)
+                (storage/generate-filename file))))))
+
+
 (def test-fs-storage-dir
   (channel.io/path-join
    (channel.io/tmpdir)

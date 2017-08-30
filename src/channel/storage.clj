@@ -35,11 +35,13 @@ Returns `true` on success and `false` otherwise."))
             {:root root, :relative relative}))))
 
 
-;; TODO: test
 (defn generate-filename
   "Generate a filename for the given `file`, preserving the extension."
   [file]
-  (str (java.util.UUID/randomUUID) "." (file-extension file)))
+  (let [uuid (java.util.UUID/randomUUID)]
+    (if-let [ext (file-extension file)]
+      (str uuid "." ext)
+      (str uuid))))
 
 
 (deftype FileSystemStorage [root-path]
