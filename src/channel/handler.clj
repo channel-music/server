@@ -1,6 +1,7 @@
 (ns channel.handler
   (:require
    [channel.env :refer [defaults]]
+   [channel.config :refer [env]]
    [channel.middleware :as middleware]
    [channel.routes.services :refer [service-routes]]
    [compojure.core :refer [routes wrap-routes]]
@@ -17,7 +18,9 @@
 (def app-routes
   (routes
     #'service-routes
-    (route/files "media" {:root (get env :media-path "media")})
+    (route/files
+     (get env :media-url "media")
+     {:root (get env :media-path "media")})
     (route/not-found
       (response/not-found {:detail "Not found"}))))
 
