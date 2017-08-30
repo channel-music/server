@@ -70,4 +70,8 @@ Returns `true` on success and `false` otherwise."))
 
 
 (defstate ^:dynamic *storage*
-  :start (FileSystemStorage. (get env :media-path "media")))
+  :start
+  (let [root-dir (io/file (get env :media-path "media"))]
+    (when-not (.exists root-dir)
+      (.mkdir root-dir))
+    (FileSystemStorage. (.getPath root-dir))))
