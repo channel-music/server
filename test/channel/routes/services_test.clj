@@ -39,6 +39,15 @@
   (make-mount-fixture #'channel.storage/*storage*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn- without-file
+  "Return a list of songs with their file's removed."
+  [songs]
+  (map #(dissoc % :file) songs))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest test-make-song
@@ -78,7 +87,18 @@
               (is (= :duplicate-record (:type (ex-data e)))))))))))
 
 
-(deftest test-song-with-url)
+(deftest test-song-with-url
+  (with-redefs [channel.config/env {:media-url "test-media"}]
+    (testing "appends current media url to file"
+      (is (= {:file "test-media/test.txt"}
+             (services/song-with-url {:file "test.txt"}))))
+
+    (testing "ignores songs with no file"
+      (is (= {:title "a"} (services/song-with-url {:title "a"}))))
+
+    (testing "ignores songs with empty file string"
+      (is (= {:file ""} (services/song-with-url {:file ""}))))))
+
 
 (deftest services-test
   (let [songs (map #(merge (songs/create-song! *db* %) %)
@@ -94,17 +114,23 @@
     (testing "fetch all songs"
       (let [response ((app) (mock/request :get "/songs"))]
         (is (= 200 (:status response)))
-        (let [without-file (fn [songs]
-                             (map #(dissoc % :file) songs))]
-          ;; DB may be poluted, so check subset instead
-          (is (clojure.set/subset?
-               (set (without-file songs))
-               (set (without-file (json-str->map (:body response)))))))))
+        ;; DB may be poluted, so check subset instead
+        (is (clojure.set/subset?
+             (set (without-file songs))
+             (set (without-file (json-str->map (:body response))))))))
 
     (testing "fetch a song using ID"
-      (let [response ((app) (mock/request :get song-url))]
-        (is (= 200 (:status response)))
-        (is (= (first songs) (json-str->map (:body response))))))
+      (with-redefs [channel.config/env {:media-url "test-media"}]
+        (let [response ((app) (mock/request :get song-url))]
+          (testing "correct status"
+            (is (= 200 (:status response))))
+
+          (let [resp (json-str->map (:body response))]
+            (testing "contains expected song data"
+              (is (= (without-file songs) (without-file [resp]))))
+
+            (testing "includes media path in file"
+              (is (clojure.string/includes? (:file resp) "test-media")))))))
 
     (testing "returns not found for a missing ID"
       (let [response ((app) (mock/request :get missing-song-url))]

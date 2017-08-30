@@ -55,8 +55,9 @@
 
 (defn song-with-url [song]
   (let [media-url (get env :media-url "media")]
-    ;; FIXME: join paths properly
-    (update song :file #(format "%s/%s" media-url %))))
+    (if (seq (:file song))
+      (update song :file #(format "%s/%s" media-url %))
+      song)))
 
 
 (defn not-found
