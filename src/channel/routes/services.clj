@@ -27,7 +27,10 @@
 (s/defschema UpdatedSong (dissoc Song :id :file))
 
 
-(defn store-file! [file]
+(defn store-file!
+  "Store file in storage, generating a unique filename for it. Will
+  retry the operation on UUID collision."
+  [file]
   (try
     (let [filename (storage/generate-filename file)]
       (storage/store! *storage* file filename))
@@ -38,7 +41,11 @@
         (throw e)))))
 
 
-(defn make-song [metadata file]
+(defn make-song
+  "Create a new song, store its related `file` in storage and commit
+  to the database. Returns the song data if successful and will throw
+  an error if the song already exists."
+  [metadata file]
   (let [song (assoc metadata :file (store-file! file))]
     (if (db.songs/song-exists? *db* song)
       (throw (ex-info "Song already exists" {:type :duplicate-record}))
