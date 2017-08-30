@@ -49,7 +49,7 @@
 
   (testing "all-songs"
     (testing "fetching created objects"
-      #_(is (= 2 (count (songs/all-songs *db*)))))
+      (is (<= 2 (count (songs/all-songs *db*)))))
 
     (testing "records are sorted by ID"
       (let [songs (songs/all-songs *db*)]

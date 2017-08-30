@@ -49,8 +49,12 @@
     (testing "fetch all songs"
       (let [response ((app) (mock/request :get "/songs"))]
         (is (= 200 (:status response)))
-        ;; TODO: use contains? instead, as DB may be poluted
-        (is (= songs (json-str->map (:body response))))))
+        (let [without-file (fn [songs]
+                             (map #(dissoc % :file) songs))]
+          ;; DB may be poluted, so check subset isntead
+          (is (clojure.set/subset?
+               (set (without-file songs))
+               (set (without-file (json-str->map (:body response)))))))))
 
     (testing "fetch a song using ID"
       (let [response ((app) (mock/request :get song-url))]
