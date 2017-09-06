@@ -53,15 +53,27 @@
       (merge song (db.songs/create-song! *db* song)))))
 
 
-(defn song-with-url [song]
+(defn request-hostname
+  "Return the full hostname for the given `request`."
+  [request]
+  (str (-> request :scheme name)
+       "://"
+       (get-in request [:headers "host"])))
+
+
+(defn song-with-url
+  "Return a new song with the full URL for the file resource
+  appended."
+  [request song]
   (let [media-url (get env :media-url "media")]
     (if (seq (:file song))
-      (update song :file #(format "%s/%s" media-url %))
+      (let [hostname (request-hostname request)]
+        (update song :file #(format "%s/%s/%s" hostname media-url %)))
       song)))
 
 
 (defn not-found
-  "Sets request status to 404 and adds a default message."
+  "Set request status to 404 and adds a default message."
   []
   (response/not-found {:detail "Not found"}))
 
@@ -85,14 +97,14 @@
         (io/delete-file (:tempfile file)) ;; cleanup
         (response/bad-request {:detail (.getMessage e), :type (:type (ex-data e))}))))
 
-  (context "/songs" []
+  (context "/songs" request
     :tags ["songs"]
 
     (GET "/" []
       :summary "Fetch all songs."
       :return [Song]
       (->> (db.songs/all-songs *db*)
-           (map song-with-url)
+           (map #(song-with-url request %))
            (response/ok)))
 
     (context "/:id" []
@@ -101,7 +113,7 @@
         :summary "Fetch a specific song"
         :return Song
         (if-let [song (db.songs/song-by-id *db* {:id id})]
-          (response/ok (song-with-url song))
+          (response/ok (song-with-url request song))
           (not-found)))
 
       (PUT "/" []
@@ -112,7 +124,7 @@
         (if-let [old-song (db.songs/song-by-id *db* {:id id})]
           (let [new-song (merge old-song new-song)]
             (db.songs/update-song! *db* new-song)
-            (response/ok (song-with-url new-song)))
+            (response/ok (song-with-url request new-song)))
           (not-found)))
 
       (DELETE "/" []

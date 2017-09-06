@@ -87,17 +87,36 @@
               (is (= :duplicate-record (:type (ex-data e)))))))))))
 
 
+(deftest test-resource-hostname
+  (testing "returns the hostname based off request params"
+    (testing "http schema"
+      (is (= "http://channel.org"
+             (-> {:scheme :http, :headers {"host" "channel.org"}}
+                 (services/request-hostname)))))
+
+    (testing "https scema"
+      (is (= "https://channel.org"
+             (-> {:scheme :https, :headers {"host" "channel.org"}}
+                 (services/request-hostname)))))
+
+    (testing "IP address hostnames"
+      (is (= "http://127.0.0.1"
+             (-> {:scheme :http, :headers {"host" "127.0.0.1"}}
+                 (services/request-hostname)))))))
+
+
 (deftest test-song-with-url
   (with-redefs [channel.config/env {:media-url "test-media"}]
-    (testing "appends current media url to file"
-      (is (= {:file "test-media/test.txt"}
-             (services/song-with-url {:file "test.txt"}))))
+    (let [request {:scheme :http, :headers {"host" "localhost:3000"}}]
+      (testing "appends current media url to file"
+        (is (= {:file "http://localhost:3000/test-media/test.txt"}
+               (services/song-with-url request {:file "test.txt"}))))
 
-    (testing "ignores songs with no file"
-      (is (= {:title "a"} (services/song-with-url {:title "a"}))))
+      (testing "ignores songs with no file"
+        (is (= {:title "a"} (services/song-with-url request {:title "a"}))))
 
-    (testing "ignores songs with empty file string"
-      (is (= {:file ""} (services/song-with-url {:file ""}))))))
+      (testing "ignores songs with empty file string"
+        (is (= {:file ""} (services/song-with-url request {:file ""})))))))
 
 
 (deftest services-test
