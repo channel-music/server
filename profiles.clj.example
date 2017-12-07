@@ -1,0 +1,4 @@
+{:profiles/dev {:env {:database-url "jdbc:postgresql://localhost/channel_dev?user=channel"
+                     :media-path "media"}}
+ :profiles/test {:env {:database-url "jdbc:postgresql://localhost/channel_test?user=channel"
+                      :media-path "test-media"}}}
